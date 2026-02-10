@@ -4,7 +4,7 @@
         "couches_dessus": 3,
         "couches_dessous": 3,
         "remplissage": 5,
-        "motif_remplissage": grille,
+        "motif_remplissage": "grille",
         "longueur_ancre": 2,
         "longueur_max_ancre": 2
     },
