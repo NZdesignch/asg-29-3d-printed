@@ -1,33 +1,55 @@
-", "").replace(".git", "").replace("git@github.com:", "")
-        return f"https://raw.githubusercontent.com/{repo_path}/main"
-    except:
+import os
+import json
+import shutil
+import subprocess
+from pathlib import Path
+import urllib.parse
+
+def get_github_repo_info():
+    """Récupère l'URL raw de GitHub pour les téléchargements directs."""
+    try:
+        # Récupère l'URL du dépôt distant
+        remote_url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"]).decode().strip()
+        # Nettoyage pour obtenir 'Utilisateur/Depot'
+        repo_path = remote_url.replace("https://github.com", "").replace(".git", "").replace("git@github.com:", "")
+        return f"https://raw.githubusercontent.com{repo_path}/main"
+    except Exception:
         return "."
 
 def generate_bom():
+    # --- CONFIGURATION ---
     root_dir = Path(".")
     output_file = "bom.md"
     settings_file = "print_settings.json"
-    archive_dir = Path("archives") # Dossier pour stocker les ZIP
+    archive_dir = Path("archives")
+    # On exclut le dossier archives du scan pour éviter les boucles
     exclude = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives'}
     
     # Création du dossier d'archives s'il n'existe pas
     archive_dir.mkdir(exist_ok=True)
     base_raw_url = get_github_repo_info()
 
+    # 1. Chargement du JSON
     if Path(settings_file).exists():
         with open(settings_file, "r", encoding="utf-8") as f:
             data = json.load(f)
     else:
         data = {}
 
-    common_keys = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_pattern", "infill_anchor", "infill_anchor_max"]
+    # Paramètres partagés
+    common_keys = [
+        "top_solid_layers", "bottom_solid_layers", 
+        "fill_density", "fill_pattern", 
+        "infill_anchor", "infill_anchor_max"
+    ]
+    
     if "COMMON_SETTINGS" not in data:
         data["COMMON_SETTINGS"] = {k: None for k in common_keys}
     
     common = data["COMMON_SETTINGS"]
     new_print_settings = {"COMMON_SETTINGS": common}
 
-    # Analyse des répertoires
+    # 2. Analyse pour le Sommaire et les Modules
     level1_dirs = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
     modules_list = []
     for l1 in level1_dirs:
@@ -39,59 +61,64 @@ def generate_bom():
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("# 🛠️ Nomenclature (BOM)\n\n")
 
-        # --- SOMMAIRE ---
+        # --- SECTION : SOMMAIRE ---
         f.write("## 📌 Sommaire\n")
         for mod_path, _ in modules_list:
             anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
             f.write(f"- [Module : {mod_path.name.replace('_', ' ')}](#-module--{anchor})\n")
         f.write("\n---\n\n")
 
-        # --- PARAMÈTRES COMMUNS ---
+        # --- TABLEAU DES PARAMÈTRES COMMUNS ---
         f.write("## ⚙️ Paramètres d'Impression Généraux\n\n")
         def check(val): return val if val is not None else "🔴 _À définir_"
-        f.write("| Paramètre | Valeur |\n| :--- | :--- |\n")
+
+        f.write("| Paramètre | Valeur |\n")
+        f.write("| :--- | :--- |\n")
         f.write(f"| Couches Solides (Dessus / Dessous) | {check(common['top_solid_layers'])} / {check(common['bottom_solid_layers'])} |\n")
         f.write(f"| Remplissage (Densité / Motif) | {check(common['fill_density'])} / {check(common['fill_pattern'])} |\n")
         f.write(f"| Ancre de remplissage (Valeur / Max) | {check(common['infill_anchor'])} / {check(common['infill_anchor_max'])} |\n\n")
+        
         f.write("---\n\n")
 
-        # --- GÉNÉRATION PAR MODULE ---
+        # --- GÉNÉRATION DES TABLEAUX PAR MODULE ---
         for module_path, parent_name in modules_list:
-            stls = sorted(list(module_path.rglob("*.stl")))
-            
-            # CRÉATION DU ZIP DU MODULE
+            # Création de l'archive ZIP pour le module
             zip_name = f"module_{module_path.name}"
-            zip_path = archive_dir / zip_name
-            shutil.make_archive(str(zip_path), 'zip', root_dir=module_path)
-            
-            # Lien vers l'archive ZIP
+            shutil.make_archive(str(archive_dir / zip_name), 'zip', root_dir=module_path)
             zip_url = f"{base_raw_url}/archives/{zip_name}.zip"
 
             f.write(f"## 📦 Module : {module_path.name.replace('_', ' ')}\n")
-            f.write(f"Section : `{parent_name}` | **[🗜️ Télécharger tout le module (ZIP)]({zip_url})**\n\n")
+            f.write(f"Section : `{parent_name}` | **[🗜️ Télécharger ZIP]({zip_url})**\n\n")
             
-            f.write("| Structure | État | Périmètres | Vue 3D | Download |\n| :--- | :---: | :---: | :---: | :---: |\n")
+            f.write("| Structure | État | Périmètres | Vue 3D | Download |\n")
+            f.write("| :--- | :---: | :---: | :---: | :---: |\n")
 
             for item in sorted(list(module_path.rglob("*"))):
                 if item.is_dir() or item.suffix.lower() == ".stl":
                     rel_path = str(item.relative_to(root_dir))
                     depth = len(item.relative_to(module_path).parts)
                     indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
+                    
                     status, per, view, dl = ["-"] * 4
                     
                     if item.suffix.lower() == ".stl":
                         old_val = data.get(rel_path, {}).get("perimeters", None)
                         new_print_settings[rel_path] = {"perimeters": old_val}
+                        
                         status = "🟢" if old_val is not None else "🔴"
                         per = old_val if old_val is not None else "---"
+                        
                         url_path = urllib.parse.quote(rel_path)
                         view = f"[👁️]({url_path})"
                         dl = f"[💾]({base_raw_url}/{url_path})"
 
                     icon = "📂" if item.is_dir() else "📄"
-                    f.write(f"| {indent}{icon} {item.name} | {status} | {per} | {view} | {dl} |\n")
+                    name = f"**{item.name}**" if item.is_dir() else item.name
+                    f.write(f"| {indent}{icon} {name} | {status} | {per} | {view} | {dl} |\n")
+                
             f.write("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---\n\n")
 
+    # Sauvegarde du JSON
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(new_print_settings, f, indent=4, ensure_ascii=False)
 
