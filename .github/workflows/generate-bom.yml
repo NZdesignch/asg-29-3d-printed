@@ -2,16 +2,14 @@ name: Update STL BOM
 on:
   push:
     paths:
-      - '**/*.stl'      # Se déclenche seulement si un fichier STL est ajouté/modifié
-      - 'generate_bom.py' # Ou si vous modifiez le script lui-même
-  workflow_dispatch:    # Permet de lancer le script manuellement depuis l'onglet Actions
+      - '**/*.stl'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # Donne la permission d'écrire le fichier bom.md sur le dépôt
-    
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,12 +19,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Generate BOM.md
+      - name: Generate Hierarchical BOM
         run: python generate_bom.py
 
-      - name: Commit and Push changes
+      - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Automated BOM update [skip ci]"
+          commit_message: "Update hierarchical BOM [skip ci]"
           file_pattern: 'bom.md'
-          branch: ${{ github.head_ref || github.ref_name }}
