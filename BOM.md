@@ -6,7 +6,7 @@
 
 | Statut | Pièce | Qté | Périm. | Haut/Bas | Rempl. (Motif) | Ancres (Std/Max) | Actions |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| 🔴 | <samp>Nervure 01.stl</samp> | `x01` | `-` | `-/-` | `<small>- (-)</small>` | `<small>- / -</small>` | [<samp>👁️</samp>](https://github.com/blob/main/stl/aile%20gauche/nervures/Nervure%2001.stl) [<samp>📥</samp>](https://github.com/raw/main/stl/aile%20gauche/nervures/Nervure%2001.stl) |
+| 🔴 | <samp>Nervure 01.stl</samp> | `x01` | `2` | `-/-` | `<small>- (-)</small>` | `<small>- / -</small>` | [<samp>👁️</samp>](https://github.com/blob/main/stl/aile%20gauche/nervures/Nervure%2001.stl) [<samp>📥</samp>](https://github.com/raw/main/stl/aile%20gauche/nervures/Nervure%2001.stl) |
 | 🔴 | <samp>Section 01.stl</samp> | `x01` | `-` | `-/-` | `<small>- (-)</small>` | `<small>- / -</small>` | [<samp>👁️</samp>](https://github.com/blob/main/stl/aile%20gauche/sections/Section%2001.stl) [<samp>📥</samp>](https://github.com/raw/main/stl/aile%20gauche/sections/Section%2001.stl) |
 
 ---
