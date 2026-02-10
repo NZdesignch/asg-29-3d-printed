@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '**/*.stl'
+      - 'generate_bom.py'
   workflow_dispatch:
 
 jobs:
@@ -19,11 +20,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Generate Hierarchical BOM
+      - name: Generate Segmented BOM
         run: python generate_bom.py
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update hierarchical BOM [skip ci]"
+          commit_message: "Update BOM by components [skip ci]"
           file_pattern: 'bom.md'
