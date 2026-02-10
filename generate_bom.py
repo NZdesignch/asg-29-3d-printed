@@ -15,6 +15,7 @@ def get_github_repo_info():
         return "."
 
 def generate_bom():
+    # --- CONFIGURATION ---
     root_dir = Path(".")
     output_file = "bom.md"
     settings_file = "print_settings.json"
@@ -33,20 +34,21 @@ def generate_bom():
                 if content:
                     existing_data = json.loads(content)
         except json.JSONDecodeError as e:
-            print(f"❌ ERREUR SYNTAXE JSON (Ligne {e.lineno}) : Le script s'arrête pour protéger vos données.")
+            # SÉCURITÉ : Bloque tout si le JSON est corrompu pour éviter d'écraser vos données
+            print(f"❌ ERREUR SYNTAXE JSON (Ligne {e.lineno}) : Le script s'arrête pour protéger vos réglages.")
             return 
 
-    # --- 2. RÉCUPÉRATION ET FUSION DES PARAMÈTRES COMMUNS ---
+    # --- 2. RÉCUPÉRATION DES PARAMÈTRES COMMUNS (Mis à jour depuis le JSON) ---
     common_keys = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_pattern", "infill_anchor", "infill_anchor_max"]
     old_common = existing_data.get("COMMON_SETTINGS", {})
     
-    # On CONSERVE les valeurs existantes, sinon on initialise à None
+    # On CONSERVE ce qui est déjà rempli (non-null), sinon on initialise à None
     new_data = {
         "COMMON_SETTINGS": {k: old_common.get(k) for k in common_keys}
     }
     common = new_data["COMMON_SETTINGS"]
 
-    # --- 3. ANALYSE DES RÉPERTOIRES ---
+    # --- 3. ANALYSE DES RÉPERTOIRES (Niveau 1 et 2) ---
     level1_dirs = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
     modules_list = []
     for l1 in level1_dirs:
@@ -65,7 +67,7 @@ def generate_bom():
             f.write(f"- [Module : {mod_path.name.replace('_', ' ')}](#-module--{anchor})\n")
         f.write("\n---\n\n")
 
-        # --- SECTION : PARAMÈTRES COMMUNS (Mis à jour via le JSON) ---
+        # --- SECTION : PARAMÈTRES COMMUNS (S'affiche à jour) ---
         f.write("## ⚙️ Paramètres d'Impression Généraux\n\n")
         def check(val): return val if val is not None else "🔴 _À définir_"
 
@@ -79,7 +81,7 @@ def generate_bom():
 
         # --- GÉNÉRATION DES TABLEAUX PAR MODULE ---
         for module_path, parent_name in modules_list:
-            # Création du ZIP
+            # Gestion de l'archive ZIP sans espaces
             safe_name = module_path.name.replace(" ", "_")
             zip_filename = f"module_{safe_name}"
             shutil.make_archive(str(archive_dir / zip_filename), 'zip', root_dir=module_path)
@@ -98,7 +100,7 @@ def generate_bom():
                     indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
                     
                     if item.suffix.lower() == ".stl":
-                        # CONSERVATION des périmètres individuels
+                        # RÉCUPÉRATION SÉCURISÉE : on ne réinitialise jamais ce qui est différent de null
                         old_perim = existing_data.get(rel_path, {}).get("perimeters")
                         new_data[rel_path] = {"perimeters": old_perim}
                         
@@ -114,7 +116,7 @@ def generate_bom():
                 
             f.write("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---\n\n")
 
-    # --- 4. SAUVEGARDE FINALE DU JSON (Formaté pour édition facile) ---
+    # --- 4. SAUVEGARDE DU JSON (Formaté proprement) ---
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(new_data, f, indent=4, ensure_ascii=False)
 
