@@ -1,6 +1,4 @@
-import json
-import re
-import urllib.parse
+import json, re, urllib.parse
 from pathlib import Path
 
 # --- Configuration ---
@@ -13,87 +11,75 @@ CFG = {
 
 RE_QTY = re.compile(r'(?:x|qty)(\d+)', re.IGNORECASE)
 
-def format_md_row(stl_path, info, depth, fields, repo_url):
-    """Version optimisée du formatage de ligne."""
-    # all() s'arrête dès qu'un élément est faux (Lazy evaluation)
-    ok = all(info.get(f) not in (None, "") for f in fields)
-    
-    qty_match = RE_QTY.search(stl_path.name)
-    qty = qty_match.group(1) if qty_match else "1"
-    
-    # Construction de chaîne plus rapide (f-strings optimisées)
-    indent = f"{'&nbsp;' * (4 * depth)}📄 "
-    layers = f"{info['couches_dessus'] or '-'}↑ {info['couches_dessous'] or '-'}↓"
-    infill = f"{info['remplissage'] or '-'} ({info['motif_remplissage'] or '-'})"
-    anchors = f"{info['longueur_ancre'] or '-'} ⇥ {info['longueur_max_ancre'] or '-'}"
-    
-    encoded_path = urllib.parse.quote(stl_path.as_posix())
-    # Pré-formatage partiel de l'URL
-    url_common = f"{repo_url}/{{}}/{CFG['branch']}/{encoded_path}"
-    
-    return (f"| {'🟢' if ok else '🔴'} | {indent}<samp>{stl_path.name}</samp> | `x{qty}` | "
-            f"`{info['perimetres'] or '-'}` | `{layers}` | `{infill}` | `{anchors}` | "
-            f"[<samp>👁️ VUE</samp>]({url_common.format('blob')}) | [<samp>📥 STL</samp>]({url_common.format('raw')}) |")
-
-def process_directory(current_dir, root_cat, data_json, md_list, fields, repo_url, ext):
-    """Parcours récursif avec injection de variables pour éviter les lookups globaux."""
-    # Utilisation d'un itérateur trié
-    for item in sorted(current_dir.iterdir(), key=lambda x: x.name.lower()):
-        # Calcul de la profondeur une seule fois par item
-        rel_parts = item.relative_to(root_cat).parts
-        depth = len(rel_parts) - 1
-
-        if item.is_dir():
-            indent = "&nbsp;" * (2 * depth)
-            md_list.append(f"| | **{indent}└── 📁 {item.name}** | | | | | | | |")
-            process_directory(item, root_cat, data_json, md_list, fields, repo_url, ext)
-            
-        elif item.suffix.lower() == ext:
-            path_str = item.as_posix()
-            # Initialisation plus propre du dictionnaire
-            if path_str not in data_json:
-                data_json[path_str] = {f: None for f in fields}
-            
-            md_list.append(format_md_row(item, data_json[path_str], depth, fields, repo_url))
+def natural_key(path):
+    """Clé de tri pour classer '2' avant '10'."""
+    return [int(s) if s.isdigit() else s.lower() for s in re.split(r'(\d+)', path.name)]
 
 def generate_bom():
-    # Cache local des variables CFG (vitesse)
-    root_dir = Path(CFG["root"])
-    json_path = Path(CFG["json"])
-    fields = CFG["fields"]
-    repo_url = CFG["repo"]
-    ext = CFG["ext"]
+    ROOT_DIR, JSON_PATH = Path(CFG["root"]), Path(CFG["json"])
+    FIELDS, EMPTY_INFO = CFG["fields"], {f: None for f in CFG["fields"]}
     
-    if not root_dir.exists():
-        print(f"❌ Erreur: Dossier '{CFG['root']}' introuvable.")
-        return
+    if not ROOT_DIR.exists(): return print("❌ Dossier racine introuvable")
 
-    # Lecture JSON optimisée
-    data_json = {}
-    if json_path.exists():
-        try:
-            data_json = json.loads(json_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, IOError):
-            pass
-
-    # Utilisation d'une liste pour accumuler les lignes (beaucoup plus rapide que += sur string)
+    # 1. Chargement & Préparation
+    try:
+        db = json.loads(JSON_PATH.read_text(encoding="utf-8")) if JSON_PATH.exists() else {}
+    except: db = {}
+    
     md = ["# 📋 Nomenclature", "\n> `🟢` Configuré | `🔴` Incomplet\n"]
+    url_template = f"{CFG['repo']}/{{}}/{CFG['branch']}/"
+    
+    # Set pour suivre les fichiers vus (pour le nettoyage)
+    seen_files = set()
 
-    # Traitement des catégories
-    for cat in sorted((d for d in root_dir.iterdir() if d.is_dir()), key=lambda x: x.name.lower()):
-        md.extend([
-            f"## 📦 {cat.name.upper()}", 
-            "| Statut | Pièce | Qté | Périmètre | Couches | Remplissage | Ancre / Max | Voir | STL |",
-            "|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|"
-        ])
-        process_directory(cat, cat, data_json, md, fields, repo_url, ext)
+    # 2. Parcours des catégories (Dossiers de premier niveau)
+    categories = sorted((d for d in ROOT_DIR.iterdir() if d.is_dir()), key=natural_key)
+
+    for cat in categories:
+        md.extend([f"## 📦 {cat.name.upper()}", 
+                   "| Statut | Pièce | Qté | Périmètre | Couches | Remplissage | Ancre | Voir |",
+                   "|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|"])
+
+        # Parcours récursif des fichiers STL
+        for stl in sorted(cat.rglob(f"*{CFG['ext']}"), key=natural_key):
+            path_str = stl.as_posix()
+            seen_files.add(path_str) # Marquer comme présent
+            
+            info = db.setdefault(path_str, EMPTY_INFO.copy())
+            ok = '🟢' if all(info.get(f) for f in FIELDS) else '🔴'
+            
+            # Analyse data
+            qty = (RE_QTY.search(stl.name) or [0, "1"])[1]
+            depth = len(stl.relative_to(cat).parts) - 1
+            indent = f"{'&nbsp;' * (4 * depth)}📄 "
+            
+            # URL
+            encoded_path = urllib.parse.quote(path_str)
+            base_url = url_template + encoded_path
+
+            md.append(
+                f"| {ok} | {indent}<samp>{stl.name}</samp> | `x{qty}` | "
+                f"`{info['perimetres'] or '-'}` | "
+                f"`{info['couches_dessus'] or '-'}↑ {info['couches_dessous'] or '-'}↓` | "
+                f"`{info['remplissage'] or '-'}` | `{info['longueur_ancre'] or '-'}` | "
+                f"[👁️]({base_url.format('blob')}) |"
+            )
         md.append("\n---\n")
 
-    # Écritures groupées (Atomic write style)
-    json_path.write_text(json.dumps(data_json, indent=4, ensure_ascii=False), encoding="utf-8")
+    # 3. NETTOYAGE : Supprimer les entrées JSON dont le fichier n'existe plus
+    removed_count = 0
+    for path_in_db in list(db.keys()):
+        if path_in_db not in seen_files:
+            del db[path_in_db]
+            removed_count += 1
+
+    # 4. Sauvegarde
+    JSON_PATH.write_text(json.dumps(db, indent=4, ensure_ascii=False), encoding="utf-8")
     Path(CFG["out"]).write_text("\n".join(md), encoding="utf-8")
     
-    print(f"✅ {CFG['out']} mis à jour.")
+    status_msg = f"✅ BOM généré. {len(seen_files)} fichiers traités."
+    if removed_count: status_msg += f" ({removed_count} entrées obsolètes nettoyées)"
+    print(status_msg)
 
 if __name__ == "__main__":
     generate_bom()
