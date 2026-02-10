@@ -1,27 +1,11 @@
-# Nomenclature des fichiers (BOM)
+# ✈️ Nomenclature ASG 29 - Structure de Fabrication
 
-## 📂 Dossier : stl/fuselage
-
-| Fichier | Quantité | Note |
-| :--- | :---: | :--- |
-| Nervure 01.stl | 1 | |
-| Nervure 02.stl | 1 | |
-
----
-
-## 📂 Dossier : stl/aile gauche/nervures
-
-| Fichier | Quantité | Note |
-| :--- | :---: | :--- |
-| Nervure 01.stl | 1 | |
-
----
-
-## 📂 Dossier : stl/aile gauche/sections
-
-| Fichier | Quantité | Note |
-| :--- | :---: | :--- |
-| Section 01.stl | 1 | |
-
----
-
+| Emplacement / Pièce | Qté | Lien | Note |
+| :--- | :---: | :---: | :--- |
+| **&nbsp;&nbsp;&nbsp;&nbsp;└── 📁 nervures** | | | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 Nervure 01.stl | 01 | [Ouvrir](aile gauche/nervures/Nervure 01.stl) | |
+| **&nbsp;&nbsp;&nbsp;&nbsp;└── 📁 sections** | | | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 Section 01.stl | 01 | [Ouvrir](aile gauche/sections/Section 01.stl) | |
+| **📂 fuselage** | | | |
+| &nbsp;&nbsp;&nbsp;&nbsp;📄 Nervure 01.stl | 01 | [Ouvrir](fuselage/Nervure 01.stl) | |
+| &nbsp;&nbsp;&nbsp;&nbsp;📄 Nervure 02.stl | 02 | [Ouvrir](fuselage/Nervure 02.stl) | |
