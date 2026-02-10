@@ -30,17 +30,33 @@ def generate_bom():
     common = data["COMMON_SETTINGS"]
     new_print_settings = {"COMMON_SETTINGS": common}
 
+    # 2. Analyse préliminaire pour le Sommaire
+    level1_dirs = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
+    modules_list = []
+    for l1 in level1_dirs:
+        l2_dirs = sorted([d for d in l1.iterdir() if d.is_dir()])
+        for m in l2_dirs:
+            if list(m.rglob("*.stl")):
+                modules_list.append((m.name, l1.name))
+
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write("# 🛠️ Bill of Materials (BOM)\n\n")
+        # Titre principal renommé
+        f.write("# 🛠️ Nomenclature (BOM)\n\n")
+
+        # --- SECTION : SOMMAIRE ---
+        f.write("## 📌 Sommaire\n")
+        for mod_name, parent_name in modules_list:
+            # Formatage de l'ancre GitHub (minuscules, tirets au lieu des espaces/underscores)
+            anchor = mod_name.lower().replace(" ", "-").replace("_", "-")
+            f.write(f"- [Module : {mod_name.replace('_', ' ')}](#-module--{anchor})\n")
+        f.write("\n---\n\n")
 
         # --- TABLEAU DES PARAMÈTRES COMMUNS (Noms mis à jour) ---
         f.write("## ⚙️ Paramètres d'Impression Généraux\n\n")
-        
         def check(val): return val if val is not None else "🔴 _À définir_"
 
         f.write("| Paramètre | Valeur |\n")
         f.write("| :--- | :--- |\n")
-        # Mise à jour des libellés : Dessus / Dessous et Ancre de remplissage
         f.write(f"| Couches Solides (Dessus / Dessous) | {check(common['top_solid_layers'])} / {check(common['bottom_solid_layers'])} |\n")
         f.write(f"| Remplissage (Densité / Motif) | {check(common['fill_density'])} / {check(common['fill_pattern'])} |\n")
         f.write(f"| Ancre de remplissage (Valeur / Max) | {check(common['infill_anchor'])} / {check(common['infill_anchor_max'])} |\n\n")
@@ -48,8 +64,6 @@ def generate_bom():
         f.write("---\n\n")
 
         # --- GÉNÉRATION DES TABLEAUX PAR MODULE ---
-        level1_dirs = [d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude]
-
         for l1 in level1_dirs:
             level2_dirs = sorted([d for d in l1.iterdir() if d.is_dir()])
             
@@ -72,6 +86,7 @@ def generate_bom():
                         status, per, view, dl = ["-"] * 4
                         
                         if item.suffix.lower() == ".stl":
+                            # Nettoyage JSON : on ne garde que les périmètres pour chaque pièce
                             old_val = data.get(rel_path, {}).get("perimeters", None)
                             new_print_settings[rel_path] = {"perimeters": old_val}
                             
@@ -86,9 +101,9 @@ def generate_bom():
                         name = f"**{item.name}**" if item.is_dir() else item.name
                         f.write(f"| {indent}{icon} {name} | {status} | {per} | {view} | {dl} |\n")
                 
-                f.write("\n---\n\n")
+                f.write("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---\n\n")
 
-    # Sauvegarde du JSON
+    # Sauvegarde du JSON (propre et formaté)
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(new_print_settings, f, indent=4, ensure_ascii=False)
 
