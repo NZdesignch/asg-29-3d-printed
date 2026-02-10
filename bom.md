@@ -5,7 +5,7 @@
 ## 📦 Module : aile gauche
 Section : `stl`
 
-| Structure | État | Périmètres | Couches | Densité | Pattern | Ancre (Max) | 👁️ | 💾 |
+| Structure | État | Périmètres | Couches | Densité | Pattern | Ancre (Max) | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **aileron** | - | - | - | - | - | - | - | - |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **nervures** | - | - | - | - | - | - | - | - |
@@ -31,7 +31,7 @@ Section : `stl`
 ## 📦 Module : fuselage
 Section : `stl`
 
-| Structure | État | Périmètres | Couches | Densité | Pattern | Ancre (Max) | 👁️ | 💾 |
+| Structure | État | Périmètres | Couches | Densité | Pattern | Ancre (Max) | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 01.stl | 🟢 | 3 | 🔝4 / ⬇️3 | 15% | Grid | 600% (50) | [👁️](stl/fuselage/Nervure%2001.stl) | [💾](stl/fuselage/Nervure%2001.stl?raw=true) |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 02.stl | 🟢 | 3 | 🔝4 / ⬇️3 | 15% | Grid | 600% (50) | [👁️](stl/fuselage/Nervure%2002.stl) | [💾](stl/fuselage/Nervure%2002.stl?raw=true) |
