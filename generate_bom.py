@@ -53,3 +53,40 @@ def generate_bom():
 
 if __name__ == "__main__":
     generate_bom()
+
+def update_readme(bom_content):
+    """Injecte le contenu du BOM entre deux balises dans le README."""
+    if not os.path.exists("README.md"):
+        print("⚠️ README.md non trouvé, injection annulée.")
+        return
+
+    with open("README.md", "r", encoding="utf-8") as f:
+        readme = f.read()
+
+    # Balises de repère
+    start_tag = "<!-- BOM_START -->"
+    end_tag = "<!-- BOM_END -->"
+    
+    if start_tag in readme and end_tag in readme:
+        # On remplace tout ce qu'il y a entre les balises par le nouveau contenu
+        pattern = f"{start_tag}.*?{end_tag}"
+        replacement = f"{start_tag}\n\n{bom_content}\n\n{end_tag}"
+        new_readme = re.sub(pattern, replacement, readme, flags=re.DOTALL)
+        
+        with open("README.md", "w", encoding="utf-8") as f:
+            f.write(new_readme)
+        print("✨ README.md mis à jour avec succès.")
+    else:
+        print("❓ Balises BOM_START/END manquantes dans README.md")
+
+if __name__ == "__main__":
+    # 1. Génère le contenu
+    final_content = generate_bom() 
+    
+    # 2. Sauvegarde le fichier BOM.md (déjà dans ton script)
+    with open(CFG["out"], "w", encoding="utf-8") as f:
+        f.write(final_content)
+        
+    # 3. MISE À JOUR DU README
+    update_readme(final_content)
+
