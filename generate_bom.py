@@ -14,7 +14,7 @@ def generate_bom():
 
     for cat in categories:
         cat_path = os.path.join(CFG["root"], cat)
-        md.append(f"## 📦 {cat.upper()}\n\n| Statut | Pièce | Qté | Périmètre | Couches | Remplissage / Motif | Ancre / Max | Voir | STL |\n|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
+        md.append(f"## 📦 {cat.upper()}\n\n| Statut | Pièce | Qté | Périmètre | Couches | Remplissage | Ancre / Max | Voir | STL |\n|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
         
         for root, dirs, files in os.walk(cat_path):
             stls = sorted([f for f in files if f.lower().endswith(CFG["ext"])])
