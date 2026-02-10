@@ -1,92 +1,55 @@
-import os
-import re
-import json
-import urllib.parse
+import os, re, json, urllib.parse
 
-# --- CONFIGURATION ---
-target_extension = ".stl"
-output_file = "BOM.md"
-json_file = "print_settings.json"
-base_folder = "stl"
-repo_url = "https://github.com" # À MODIFIER
-branch = "main"
+CFG = {
+    "ext": ".stl", "out": "BOM.md", "json": "print_settings.json", "root": "stl",
+    "repo": "https://github.com", "branch": "main",
+    "fields": ["perimetres", "couches_dessus", "couches_dessous", "remplissage", "motif_remplissage", "longueur_ancre", "longueur_max_ancre"]
+}
 
-FIELDS = [
-    "perimetres", "couches_dessus", "couches_dessous", 
-    "remplissage", "motif_remplissage", "longueur_ancre", "longueur_max_ancre"
-]
-
-def load_settings():
-    if os.path.exists(json_file):
-        with open(json_file, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
-
-def save_settings(settings):
-    with open(json_file, "w", encoding="utf-8") as f:
-        json.dump(settings, f, indent=4, ensure_ascii=False)
-
-def generate_markdown_bom(base_dir):
-    settings = load_settings()
-    new_settings = settings.copy()
+def generate_bom():
+    data_json = json.load(open(CFG["json"], "r", encoding="utf-8")) if os.path.exists(CFG["json"]) else {}
+    md = [f"# ✈️ Nomenclature ASG 29\n\n> `🟢` Configuré | `🔴` Incomplet\n"]
     
-    markdown_output = f"# ✈️ Nomenclature ASG 29\n\n"
-    markdown_output += "> `🟢` Configuré | `🔴` Paramètres à renseigner dans `print_settings.json` \n\n"
-    
-    categories = sorted([d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir, d))])
+    categories = sorted([d for d in os.listdir(CFG["root"]) if os.path.isdir(os.path.join(CFG["root"], d))])
 
-    for category in categories:
-        category_path = os.path.join(base_dir, category)
-        markdown_output += f"## 📦 {category.upper()}\n\n"
+    for cat in categories:
+        cat_path = os.path.join(CFG["root"], cat)
+        md.append(f"## 📦 {cat.upper()}\n\n| Statut | Pièce | Qté | Périm. | Haut/Bas | Rempl. (Motif) | Ancres | Voir | STL |\n|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
         
-        # Colonnes séparées pour Voir et STL
-        markdown_output += "| Statut | Pièce | Qté | Périm. | Haut/Bas | Rempl. (Motif) | Ancres | Voir | STL |\n"
-        markdown_output += "| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n"
-        
-        for root, dirs, files in os.walk(category_path):
-            stl_files = [f for f in files if f.lower().endswith(target_extension)]
-            if stl_files:
-                rel_path = os.path.relpath(root, base_dir).replace("\\", "/")
+        for root, dirs, files in os.walk(cat_path):
+            stls = sorted([f for f in files if f.lower().endswith(CFG["ext"])])
+            if not stls: continue
+
+            # Gestion de la hiérarchie visuelle
+            rel_path = os.path.relpath(root, cat_path).replace("\\", "/")
+            if rel_path != ".":
+                depth = rel_path.count('/')
+                indent = "&nbsp;&nbsp;" * depth + "└── 📁 "
+                md.append(f"| | **{indent}{os.path.basename(root)}** | | | | | | | |")
+
+            for stl in stls:
+                full_path = os.path.join(root, stl).replace("\\", "/")
+                info = data_json.setdefault(full_path, {f: None for f in CFG["fields"]})
                 
-                for stl in sorted(stl_files):
-                    file_key = f"{base_folder}/{rel_path}/{stl}".replace("//", "/")
-                    
-                    if file_key not in new_settings:
-                        new_settings[file_key] = {field: None for field in FIELDS}
-                    
-                    data = new_settings[file_key]
-                    is_complete = all(data.get(f) is not None and data.get(f) != "" for f in FIELDS)
-                    status_icon = "🟢" if is_complete else "🔴"
-                    
-                    qty_match = re.search(r'(?:x|qty|v)?(\d+)', stl, re.I)
-                    qty = qty_match.group(1) if qty_match else "1"
-                    
-                    # Mise en forme des paramètres (Sans balises <small>)
-                    perim = data.get("perimetres") or "-"
-                    layers = f"{data.get('couches_dessus') or '-'}↑ {data.get('couches_dessous') or '-'}↓"
-                    infill = f"{data.get('remplissage') or '-'} ({data.get('motif_remplissage') or '-'})"
-                    anchors = f"{data.get('longueur_ancre') or '-'} ➜ {data.get('longueur_max_ancre') or '-'}"
-                    
-                    # Encodage et URLs
-                    encoded_path = urllib.parse.quote(file_key)
-                    view_url = f"{repo_url}/blob/{branch}/{encoded_path}"
-                    dl_url = f"{repo_url}/raw/{branch}/{encoded_path}"
-                    
-                    # Liens séparés utilisant <samp> pour l'uniformité
-                    view_link = f'[<samp>👁️ VUE</samp>]({view_url})'
-                    dl_link = f'[<samp>📥 STL</samp>]({dl_url})'
-                    
-                    markdown_output += (f"| {status_icon} | <samp>{stl}</samp> | `x{qty}` | "
-                                       f"`{perim}` | `{layers}` | `{infill}` | "
-                                       f"`{anchors}` | {view_link} | {dl_link} |\n")
-        
-        markdown_output += "\n---\n\n"
+                # Validation et Quantité
+                ok = all(info.get(f) not in [None, ""] for f in CFG["fields"])
+                qty = (re.findall(r'(?:x|qty)(\d+)', stl, re.I) + ["1"])[0]
+                
+                # Formatage cellules
+                depth_file = 0 if rel_path == "." else rel_path.count('/') + 1
+                indent_file = "&nbsp;&nbsp;&nbsp;&nbsp;" * depth_file + "📄 "
+                layers = f"{info['couches_dessus'] or '-'}↑ {info['couches_dessous'] or '-'}↓"
+                infill = f"{info['remplissage'] or '-'} ({info['motif_remplissage'] or '-'})"
+                anchors = f"{info['longueur_ancre'] or '-'} ➜ {info['longueur_max_ancre'] or '-'}"
+                
+                url = f"{CFG['repo']}/{{t}}/{CFG['branch']}/{urllib.parse.quote(full_path)}"
+                
+                md.append(f"| {'🟢' if ok else '🔴'} | {indent_file}<samp>{stl}</samp> | `x{qty}` | `{info['perimetres'] or '-'}` | `{layers}` | `{infill}` | `{anchors}` | [<samp>👁️ VUE</samp>]({url.format(t='blob')}) | [<samp>📥 STL</samp>]({url.format(t='raw')}) |")
+        md.append("\n---\n")
 
-    save_settings(new_settings)
-    return markdown_output
+    with open(CFG["out"], "w", encoding="utf-8") as f: f.write("\n".join(md))
+    with open(CFG["json"], "w", encoding="utf-8") as f: json.dump(data_json, f, indent=4, ensure_ascii=False)
+    print("✅ BOM Multi-niveaux généré.")
 
 if __name__ == "__main__":
-    content = generate_markdown_bom(base_folder)
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(content)
-    print(f"✅ BOM moderne généré avec colonnes d'actions séparées.")
+    generate_bom()
