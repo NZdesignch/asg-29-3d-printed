@@ -1,18 +1,16 @@
 # 🛠️ Bill of Materials (BOM)
 
-## ⚙️ Paramètres d'Impression Généraux
-> Ces réglages s'appliquent à l'ensemble des pièces.
-
-- **Couches Solides :** 🔝 --- / ⬇️ ---
-- **Remplissage :** --- (---)
-- **Ancre d'Infill :** --- (Max: ---)
+## ⚙️ Paramètres Communs
+- **Couches Solides :** 🔝 🔴 _Non défini_ / ⬇️ 🔴 _Non défini_
+- **Remplissage :** 🔴 _Non défini_ (🔴 _Non défini_)
+- **Ancre d'Infill :** 🔴 _Non défini_ (Max: 🔴 _Non défini_)
 
 ---
 
 ## 📦 Module : aile gauche
 Section : `stl`
 
-| Structure | S<br>t<br>a<br>t<br>u<br>t | P<br>é<br>r<br>i<br>m<br>è<br>t<br>r<br>e<br>s | V<br>u<br>e<br>3<br>D | D<br>o<br>w<br>n<br>l<br>o<br>a<br>d |
+| Structure | État | Périmètres | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **aileron** | - | - | - | - |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **nervures** | - | - | - | - |
@@ -33,11 +31,15 @@ Section : `stl`
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **sections** | - | - | - | - |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Section 01.stl | 🟢 | 3 | [👁️](stl/aile%20gauche/volet/sections/Section%2001.stl) | [💾](stl/aile%20gauche/volet/sections/Section%2001.stl?raw=true) |
 
+---
+
 ## 📦 Module : fuselage
 Section : `stl`
 
-| Structure | S<br>t<br>a<br>t<br>u<br>t | P<br>é<br>r<br>i<br>m<br>è<br>t<br>r<br>e<br>s | V<br>u<br>e<br>3<br>D | D<br>o<br>w<br>n<br>l<br>o<br>a<br>d |
+| Structure | État | Périmètres | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 01.stl | 🟢 | 3 | [👁️](stl/fuselage/Nervure%2001.stl) | [💾](stl/fuselage/Nervure%2001.stl?raw=true) |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 02.stl | 🟢 | 3 | [👁️](stl/fuselage/Nervure%2002.stl) | [💾](stl/fuselage/Nervure%2002.stl?raw=true) |
+
+---
 
