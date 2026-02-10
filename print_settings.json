@@ -1,6 +1,6 @@
 {
     "COMMON_SETTINGS": {
-        "top_solid_layers": null,
+        "top_solid_layers": 3,
         "bottom_solid_layers": null,
         "fill_density": null,
         "fill_pattern": null,
