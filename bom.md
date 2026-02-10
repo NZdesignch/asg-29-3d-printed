@@ -11,8 +11,8 @@
 | Paramètre | Valeur |
 | :--- | :--- |
 | Couches Solides (Dessus / Dessous) | **3** / **3** |
-| Remplissage (Densité / Motif) | **4** / **Grille** |
-| Ancre de remplissage (Valeur / Max) | **2** / **22** |
+| Remplissage (Densité / Motif) | **4 %** / **Grille** |
+| Ancre de remplissage (Valeur / Max) | **2 mm** / **2 mm** |
 
 ---
 
