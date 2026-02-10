@@ -6,7 +6,7 @@ Réalisation d'un modèle réduit télécommande du planeur ASG 29 à l'échelle
 
 
 
-## Caractéristiques
+## 🔧 Caractéristiques
 
 | Caractéristique | Spécification | Note |
 | :--- | :---: | ---: |
