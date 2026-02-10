@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Généré le** | 2026-02-10 20:31 UTC |
+| **Généré le** | 2026-02-10 20:32 UTC |
 | **Dossier scanné** | `stl` |
 | **Total fichiers STL** | 12 |
 | **Groupes** | 2 |
