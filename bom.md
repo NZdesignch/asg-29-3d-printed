@@ -12,7 +12,7 @@
 | :--- | :--- |
 | Couches Solides (Dessus / Dessous) | **3** / **3** |
 | Remplissage (Densité / Motif) | **4** / **Grille** |
-| Ancre de remplissage (Valeur / Max) | **2** / **2** |
+| Ancre de remplissage (Valeur / Max) | **2** / **22** |
 
 ---
 
