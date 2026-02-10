@@ -1,6 +1,6 @@
 # ✈️ Planeur ASG 29
 
-Réalisation d'un modèle réduit du planeur [ASG 29](https://www.alexander-schleicher.de/) d'[Alexandre Schleicher ](https://www.alexander-schleicher.de/en/flugzeuge/asg-29/) à l'échelle 1:4
+Réalisation d'un modèle réduit du planeur [ASG 29](https://www.alexander-schleicher.de/) d'[Alexandre Schleicher ](https://www.alexander-schleicher.de/en/flugzeuge/asg-29/)
 
 ![Perspective](image/perspective.png)
 
