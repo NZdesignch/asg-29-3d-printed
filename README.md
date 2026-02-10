@@ -5,7 +5,7 @@ Réalisation d'un modèle réduit télécommande du planeur ASG 29 à l'échelle
 ![Perspective](image/perspective.png)
 
 ## 📋 Nomenclature
-[Nomenclature](bom)
+[Nomenclature](bom.md)
 
 
 
