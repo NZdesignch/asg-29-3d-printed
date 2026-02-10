@@ -1,59 +1,58 @@
-# Nom affiché dans l'onglet "Actions" de ton dépôt GitHub
-name: Update STL BOM
+# Nom du workflow pour l'onglet Actions de GitHub
+name: Update STL BOM & Archives
 
-# Déclencheurs : quand le script doit-il s'exécuter ?
+# Déclencheurs : quand le robot doit-il travailler ?
 on:
   push:
-    # Le script se lance si tu modifies l'un de ces éléments
+    # S'exécute si l'un de ces fichiers est ajouté ou modifié
     paths:
       - '**/*.stl'              # Fichiers 3D
-      - 'print_settings.json'   # Le fichier de paramètres
-      - 'generate_bom.py'       # Le script de génération lui-même
-      - '.github/workflows/*.yml' # Les fichiers de workflow
+      - 'print_settings.json'   # Paramètres d'impression
+      - 'generate_bom.py'       # Le script Python lui-même
+      - '.github/workflows/*.yml' # Ce fichier de configuration
   
-  # Permet de cliquer sur un bouton "Run workflow" manuellement sur GitHub
+  # Permet de lancer le processus manuellement depuis l'interface GitHub
   workflow_dispatch:
 
 jobs:
   build:
-    # Utilise un serveur virtuel sous Ubuntu
+    # Serveur virtuel Linux
     runs-on: ubuntu-latest
     
-    # CRUCIAL : Autorise le robot à enregistrer des fichiers sur ton dépôt
-    # Si cette ligne manque ou si les réglages du dépôt bloquent, le commit échouera.
+    # CRUCIAL : Autorise le robot à sauvegarder les fichiers (BOM, JSON et ZIP)
     permissions:
       contents: write
     
     steps:
-      # 1. Copie ton code sur le serveur virtuel
+      # 1. Récupère les fichiers du dépôt sur le serveur
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installe Python (version 3.10)
+      # 2. Installe Python pour exécuter le script
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 3. Exécute ton script Python pour mettre à jour la nomenclature
-      - name: Generate BOM
+      # 3. Exécute le script Python (Génère bom.md, maj JSON et crée les ZIP)
+      - name: Generate BOM and ZIPs
         run: python generate_bom.py
 
-      # 4. Sauvegarde (Commit) les changements s'il y en a
+      # 4. Sauvegarde les modifications sur GitHub
       - name: Commit and Push changes
-        # "continue-on-error" évite que GitHub n'affiche une erreur rouge 
-        # si aucun changement n'a été détecté (Working tree clean).
+        # "continue-on-error" évite de bloquer si rien n'a changé (Working tree clean)
         continue-on-error: true 
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          # Message visible dans ton historique Git
-          # [skip ci] évite de relancer ce script en boucle infinie
-          commit_message: "System: Auto-update Nomenclature [skip ci]"
+          # Message de l'historique Git
+          # [skip ci] est vital pour ne pas créer de boucle infinie d'actions
+          commit_message: "System: Auto-update Nomenclature and ZIP archives [skip ci]"
           
-          # Fichiers que le robot a le droit de mettre à jour
-          file_pattern: 'bom.md print_settings.json'
+          # Liste des fichiers que le robot a le droit de modifier/ajouter
+          # On inclut bom.md, le json, et tous les fichiers zip du dossier archives
+          file_pattern: 'bom.md print_settings.json archives/*.zip'
           
-          # Options pour éviter les erreurs de statut et les conflits
+          # Options pour la stabilité du workflow
           skip_dirty_check: true
           skip_fetch: true
-          disable_globbing: true
+          disable_globbing: false # Permet de détecter l'étoile dans archives/*.zip
