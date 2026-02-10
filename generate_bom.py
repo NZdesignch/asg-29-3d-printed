@@ -6,7 +6,7 @@ import urllib.parse
 target_extension = ".stl"
 output_file = "BOM.md"
 base_folder = "stl"
-repo_url = "https://github.com/NZdesignch/asg29" # À MODIFIER
+repo_url = "https://github.com/NZdesignch" # À MODIFIER
 branch = "main"
 # ---------------------
 
