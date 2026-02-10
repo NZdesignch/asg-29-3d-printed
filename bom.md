@@ -4,7 +4,7 @@
 
 | Paramètre | Valeur |
 | :--- | :--- |
-| Couches Solides (Top / Bot) | 🔝 🔴 _À définir_ / ⬇️ 🔴 _À définir_ |
+| Couches Solides (Top / Bot) | 🔴 _À définir_ / 🔴 _À définir_ |
 | Remplissage (Densité / Motif) | 🔴 _À définir_ / 🔴 _À définir_ |
 | Ancre d'Infill (Valeur / Max) | 🔴 _À définir_ / 🔴 _À définir_ |
 
