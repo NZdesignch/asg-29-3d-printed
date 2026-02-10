@@ -6,7 +6,6 @@ import urllib.parse
 target_extension = ".stl"
 output_file = "BOM.md"
 base_folder = "stl"
-# Remplace par ton URL GitHub réelle
 repo_url = "https://github.com" 
 branch = "main"
 # ---------------------
@@ -22,8 +21,8 @@ def generate_markdown_bom(base_dir):
         category_path = os.path.join(base_dir, category)
         markdown_output += f"## 📦 {category.upper()}\n\n"
         
-        # Colonnes séparées pour chaque action
-        markdown_output += "| Pièce | Qté | Aperçu | Téléchargement |\n"
+        # En-têtes uniformisés
+        markdown_output += "| Pièce (Fichier STL) | Qté | Aperçu | Téléchargement |\n"
         markdown_output += "| :--- | :---: | :---: | :---: |\n"
         
         for root, dirs, files in os.walk(category_path):
@@ -44,20 +43,21 @@ def generate_markdown_bom(base_dir):
                     file_depth = 0 if rel_to_cat == "." else rel_to_cat.count('/') + 1
                     file_indent = "&nbsp;&nbsp;&nbsp;&nbsp;" * file_depth + "📄 "
                     
-                    # Encodage du chemin
                     rel_file_path = os.path.relpath(os.path.join(root, stl), ".").replace("\\", "/")
                     encoded_path = urllib.parse.quote(rel_file_path)
                     
-                    # --- BOUTONS NATIFS ---
-                    # Vue 3D : Bouton type "KBD" (clavier) pour un look système
+                    # --- UNIFORMISATION POLICE (MONOSPACE) ---
+                    # Nom du fichier en code
+                    name_display = f"{file_indent}<code>{stl}</code>"
+                    
+                    # Boutons uniformes avec <code>
                     view_url = f"{repo_url}/blob/{branch}/{encoded_path}"
-                    view_btn = f'<a href="{view_url}"><code>👁️ Visualiser</code></a>'
+                    view_btn = f'<a href="{view_url}"><code>👁️ VIEW</code></a>'
                     
-                    # Téléchargement : Bouton avec emoji
                     dl_url = f"{repo_url}/raw/{branch}/{encoded_path}"
-                    dl_btn = f'<a href="{dl_url}"><b>📥 STL</b></a>'
+                    dl_btn = f'<a href="{dl_url}"><code>📥 STL</code></a>'
                     
-                    markdown_output += f"| {file_indent}{stl} | **{qty}** | {view_btn} | {dl_btn} |\n"
+                    markdown_output += f"| {name_display} | `x{qty}` | {view_btn} | {dl_btn} |\n"
         
         markdown_output += "\n---\n\n"
             
@@ -67,4 +67,4 @@ if __name__ == "__main__":
     content = generate_markdown_bom(base_folder)
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(content)
-    print(f"🚀 BOM généré avec boutons natifs et colonnes distinctes.")
+    print(f"🚀 BOM uniformisé généré avec succès !")
