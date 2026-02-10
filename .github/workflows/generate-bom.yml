@@ -1,56 +1,32 @@
-name: Generate BOM
-
+name: Update STL BOM
 on:
   push:
-    branches:
-      - main
-      - master
     paths:
-      - "stl/**.stl"
-      - "params.json"
-      - "generate_bom.py"
-  workflow_dispatch:
-
-permissions:
-  contents: write
+      - '**/*.stl'      # Se déclenche seulement si un fichier STL est ajouté/modifié
+      - 'generate_bom.py' # Ou si vous modifiez le script lui-même
+  workflow_dispatch:    # Permet de lancer le script manuellement depuis l'onglet Actions
 
 jobs:
-  generate-bom:
+  build:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write   # Donne la permission d'écrire le fichier bom.md sur le dépôt
+    
     steps:
-      - name: Checkout du repo
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.10'
 
-      - name: Générer bom.md
-        run: |
-          python generate_bom.py \
-            --repo-root  "$GITHUB_WORKSPACE" \
-            --json       params.json \
-            --stl-dir    stl \
-            --output     bom.md \
-            --repo-url   "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
-            --branch     "$GITHUB_REF_NAME"
+      - name: Generate BOM.md
+        run: python generate_bom.py
 
-      - name: Vérifier si bom.md a changé (nouveau fichier inclus)
-        id: check_changes
-        run: |
-          git add bom.md
-          git diff --cached --quiet bom.md \
-            && echo "changed=false" >> $GITHUB_OUTPUT \
-            || echo "changed=true"  >> $GITHUB_OUTPUT
-
-      - name: Committer et pousser bom.md
-        if: steps.check_changes.outputs.changed == 'true'
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: mise à jour automatique de bom.md [skip ci]"
-          git push
+      - name: Commit and Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automated BOM update [skip ci]"
+          file_pattern: 'bom.md'
+          branch: ${{ github.head_ref || github.ref_name }}
