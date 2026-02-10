@@ -27,24 +27,6 @@ jobs:
       - name: Run BOM Script
         run: python generate_bom.py
 
-      - name: Update README with BOM content
-        run: |
-          # 1. Extraire le haut du README (jusqu'à la balise START incluse)
-          sed -i '/<!-- BOM_START -->/q' README.md
-          
-          # 2. Créer un fichier temporaire avec le haut + le contenu du BOM
-          cat README.md > README.new
-          echo "" >> README.new
-          cat BOM.md >> README.new
-          echo "" >> README.new
-          
-          # 3. Ajouter la balise de fin et le reste du document original
-          echo "<!-- BOM_END -->" >> README.new
-          
-          # 4. Remplacer le README
-          mv README.new README.md
-
-
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
