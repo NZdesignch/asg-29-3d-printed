@@ -5,69 +5,58 @@ import urllib.parse
 def generate_bom():
     root_dir = Path(".")
     output_file = "bom.md"
-    # Dossiers à ignorer
     exclude = {'.git', '.github', '__pycache__', 'venv', '.vscode'}
 
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write("# 🛠️ Bill of Materials (BOM) par Composants\n\n")
-        f.write("> Ce fichier recense tous les fichiers STL classés par dossiers principaux.\n\n")
+        f.write("# 🛠️ Bill of Materials (BOM) - Inventaire par Modules\n\n")
 
-        # Récupération des dossiers de premier niveau (ex: Aile Gauche, Fuselage...)
-        top_folders = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
+        # Extraction des dossiers de niveau 1 (les modules principaux)
+        modules = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
 
-        if not top_folders:
-            f.write("_Aucun dossier de composants trouvé._\n")
-            return
-
-        for folder in top_folders:
-            # On vérifie s'il y a des fichiers STL dans ce dossier ou ses sous-dossiers
-            all_stls = list(folder.rglob("*.stl"))
+        for module in modules:
+            # On vérifie si le module contient des fichiers STL
+            all_stls = list(module.rglob("*.stl"))
             if not all_stls:
                 continue
 
-            # Titre pour le dossier de premier niveau
-            f.write(f"## 📦 Section : {folder.name.replace('_', ' ')}\n\n")
+            # --- TITRE DU TABLEAU (Nom du dossier de niveau 1) ---
+            f.write(f"## 📦 Module : {module.name.replace('_', ' ')}\n\n")
             
-            # Début du tableau pour ce dossier spécifique
-            f.write("| Structure Hiérarchique | Type | Visualisation | Chemin relatif |\n")
+            f.write("| Structure Hiérarchique | Type | Visualisation | Chemin |\n")
             f.write("| :--- | :---: | :---: | :--- |\n")
 
-            # Parcours de tous les éléments à l'intérieur (fichiers et sous-dossiers)
-            # On trie pour garder une cohérence visuelle
-            sub_elements = sorted(list(folder.rglob("*")))
+            # Parcours de tous les éléments à l'intérieur de ce module spécifique
+            # On utilise rglob("*") pour récupérer dossiers ET fichiers
+            elements = sorted(list(module.rglob("*")))
             
-            for item in sub_elements:
-                # On ne traite que les dossiers ou les fichiers STL
-                if item.is_dir() or item.suffix.lower() == ".stl":
-                    # Calcul de la profondeur relative au dossier parent (folder)
-                    depth = len(item.relative_to(folder).parts)
-                    
-                    # Indentation visuelle
-                    # Niveau 0 (directement dans le dossier) = pas d'indentation
-                    # Niveau 1+ = indentation avec connecteur
-                    if depth == 1:
-                        indent = ""
-                        display_name = f"**{item.name}**"
-                    else:
-                        indent = "&nbsp;" * 6 * (depth - 1) + "└── "
-                        display_name = item.name
+            # On ajoute le dossier racine du module lui-même en haut du tableau
+            f.write(f"| 📂 **{module.name}** | Dossier | | `{module.name}` |\n")
 
-                    # Icônes
+            for item in elements:
+                # Filtrage : seulement dossiers ou fichiers STL
+                if item.is_dir() or item.suffix.lower() == ".stl":
+                    # Calcul de la profondeur relative au module (pour l'indentation)
+                    depth = len(item.relative_to(module).parts)
+                    
+                    # Style visuel pour la hiérarchie
+                    indent = "&nbsp;" * 6 * depth + "└── "
                     icon = "📂" if item.is_dir() else "📄"
                     
-                    # Lien de visualisation 3D (GitHub)
-                    link = ""
+                    # Lien vers l'aperçu 3D de GitHub
+                    view_link = ""
                     if item.suffix.lower() == ".stl":
                         url_path = urllib.parse.quote(str(item.relative_to(root_dir)))
-                        link = f"[👁️ Aperçu]({url_path})"
+                        view_link = f"[👁️ Voir]({url_path})"
                     
+                    # Nom d'affichage
+                    name = f"**{item.name}**" if item.is_dir() else item.name
                     rel_path = f"`{item.relative_to(root_dir)}`"
-                    
-                    f.write(f"| {indent}{icon} {display_name} | {'Dossier' if item.is_dir() else 'STL'} | {link} | {rel_path} |\n")
-            
-            f.write("\n---\n\n") # Séparateur entre les tableaux
 
-    print(f"✅ BOM généré avec succès dans {output_file}")
+                    f.write(f"| {indent}{icon} {name} | {'Dossier' if item.is_dir() else 'STL'} | {view_link} | {rel_path} |\n")
+            
+            f.write("\n---\n\n") # Ligne de séparation entre les tableaux
+
+    print(f"✅ BOM sectorisé généré dans {output_file}")
 
 if __name__ == "__main__":
     generate_bom()
