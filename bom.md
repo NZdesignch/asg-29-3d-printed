@@ -1,9 +1,12 @@
 # 🛠️ Bill of Materials (BOM)
 
-## ⚙️ Paramètres Communs
-- **Couches Solides :** 🔝 🔴 _Non défini_ / ⬇️ 🔴 _Non défini_
-- **Remplissage :** 🔴 _Non défini_ (🔴 _Non défini_)
-- **Ancre d'Infill :** 🔴 _Non défini_ (Max: 🔴 _Non défini_)
+## ⚙️ Paramètres d'Impression Généraux
+
+| Paramètre | Valeur |
+| :--- | :--- |
+| Couches Solides (Top / Bot) | 🔝 🔴 _À définir_ / ⬇️ 🔴 _À définir_ |
+| Remplissage (Densité / Motif) | 🔴 _À définir_ / 🔴 _À définir_ |
+| Ancre d'Infill (Valeur / Max) | 🔴 _À définir_ / 🔴 _À définir_ |
 
 ---
 
