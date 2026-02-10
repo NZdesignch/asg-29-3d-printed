@@ -4,8 +4,8 @@
         "bottom_solid_layers": 3,
         "fill_density": 5,
         "fill_pattern": "Grille",
-        "infill_anchor": 2"mm",
-        "infill_anchor_max": 2"mm"
+        "infill_anchor": 2 "mm",
+        "infill_anchor_max": 2 "mm"
     },
     "stl/aile gauche/aileron/nervures/Nervure 01.stl": {
         "perimeters": "3"
