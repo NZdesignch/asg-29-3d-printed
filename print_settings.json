@@ -34,5 +34,23 @@
         "motif_remplissage": null,
         "longueur_ancre": null,
         "longueur_max_ancre": null
+    },
+    "stl/aile gauche/aileron/nervures/Nervure 01.stl": {
+        "perimetres": null,
+        "couches_dessus": null,
+        "couches_dessous": null,
+        "remplissage": null,
+        "motif_remplissage": null,
+        "longueur_ancre": null,
+        "longueur_max_ancre": null
+    },
+    "stl/aile gauche/aileron/sections/Section 01.stl": {
+        "perimetres": null,
+        "couches_dessus": null,
+        "couches_dessous": null,
+        "remplissage": null,
+        "motif_remplissage": null,
+        "longueur_ancre": null,
+        "longueur_max_ancre": null
     }
 }
