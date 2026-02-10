@@ -1,55 +1,37 @@
-# Bill of Materials (BOM)
+# 🛠️ Bill of Materials (BOM) - Modèles STL
 
-<!-- Généré automatiquement par generate_bom.py — ne pas éditer manuellement -->
+Généré automatiquement le : 1770755804.3949292
 
-| | |
-|---|---|
-| **Généré le** | 2026-02-10 20:32 UTC |
-| **Dossier scanné** | `stl` |
-| **Total fichiers STL** | 12 |
-| **Groupes** | 2 |
+## 📁 Catégorie : stl
 
-## Table des matières
+| Pièce | Qté | Aperçu | Chemin |
+| :--- | :---: | :---: | :--- |
+| Nervure 01 | 1 | [🔗 Voir](stl/aile%20gauche/aileron/nervures/Nervure%2001.stl) | `stl/aile gauche/aileron/nervures/Nervure 01.stl` |
+| Section 01 | 1 | [🔗 Voir](stl/aile%20gauche/aileron/sections/Section%2001.stl) | `stl/aile gauche/aileron/sections/Section 01.stl` |
+| Nervure 01 - Copie (2) | 1 | [🔗 Voir](stl/aile%20gauche/nervures/Nervure%2001%20-%20Copie%20%282%29.stl) | `stl/aile gauche/nervures/Nervure 01 - Copie (2).stl` |
+| Nervure 01 - Copie | 1 | [🔗 Voir](stl/aile%20gauche/nervures/Nervure%2001%20-%20Copie.stl) | `stl/aile gauche/nervures/Nervure 01 - Copie.stl` |
+| Nervure 01 | 1 | [🔗 Voir](stl/aile%20gauche/nervures/Nervure%2001.stl) | `stl/aile gauche/nervures/Nervure 01.stl` |
+| Section 01 - Copie (2) | 1 | [🔗 Voir](stl/aile%20gauche/sections/Section%2001%20-%20Copie%20%282%29.stl) | `stl/aile gauche/sections/Section 01 - Copie (2).stl` |
+| Section 01 - Copie | 1 | [🔗 Voir](stl/aile%20gauche/sections/Section%2001%20-%20Copie.stl) | `stl/aile gauche/sections/Section 01 - Copie.stl` |
+| Section 01 | 1 | [🔗 Voir](stl/aile%20gauche/sections/Section%2001.stl) | `stl/aile gauche/sections/Section 01.stl` |
+| Nervure 01 | 1 | [🔗 Voir](stl/aile%20gauche/volet/nervures/Nervure%2001.stl) | `stl/aile gauche/volet/nervures/Nervure 01.stl` |
+| Section 01 | 1 | [🔗 Voir](stl/aile%20gauche/volet/sections/Section%2001.stl) | `stl/aile gauche/volet/sections/Section 01.stl` |
+| Nervure 01 | 1 | [🔗 Voir](stl/fuselage/Nervure%2001.stl) | `stl/fuselage/Nervure 01.stl` |
+| Nervure 02 | 1 | [🔗 Voir](stl/fuselage/Nervure%2002.stl) | `stl/fuselage/Nervure 02.stl` |
 
-- [aile gauche](#aile-gauche) — 10 fichier(s)
-- [fuselage](#fuselage) — 2 fichier(s)
+## 🗂️ Liste Globale de Fabrication
 
----
-
-## aile gauche
-
-_10 fichier(s) STL_
-
-| Structure | Fichier | % Remplissage | Type Remplissage | Couches Dessus | Couches Dessous | Ancre (mm) | Ancre Max (mm) | 🔍 | ⬇️ |
-|-----------|---------|:------:|:------:|:------:|:------:|:------:|:------:| :---: | :---: |
-| `├── aileron/` | |   |   |   |   |   |   | |  |  |
-| `│   ├── nervures/` | |   |   |   |   |   |   | |  |  |
-| `│   │   └── Nervure 01.stl` | `Nervure 01.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/aileron/nervures/Nervure 01.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/aileron/nervures/Nervure 01.stl) |
-| `│   └── sections/` | |   |   |   |   |   |   | |  |  |
-| `│       └── Section 01.stl` | `Section 01.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/aileron/sections/Section 01.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/aileron/sections/Section 01.stl) |
-| `├── nervures/` | |   |   |   |   |   |   | |  |  |
-| `│   ├── Nervure 01 - Copie (2).stl` | `Nervure 01 - Copie (2).stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/nervures/Nervure 01 - Copie (2).stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/nervures/Nervure 01 - Copie (2).stl) |
-| `│   ├── Nervure 01 - Copie.stl` | `Nervure 01 - Copie.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/nervures/Nervure 01 - Copie.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/nervures/Nervure 01 - Copie.stl) |
-| `│   └── Nervure 01.stl` | `Nervure 01.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/nervures/Nervure 01.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/nervures/Nervure 01.stl) |
-| `├── sections/` | |   |   |   |   |   |   | |  |  |
-| `│   ├── Section 01 - Copie (2).stl` | `Section 01 - Copie (2).stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/sections/Section 01 - Copie (2).stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/sections/Section 01 - Copie (2).stl) |
-| `│   ├── Section 01 - Copie.stl` | `Section 01 - Copie.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/sections/Section 01 - Copie.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/sections/Section 01 - Copie.stl) |
-| `│   └── Section 01.stl` | `Section 01.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/sections/Section 01.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/sections/Section 01.stl) |
-| `└── volet/` | |   |   |   |   |   |   | |  |  |
-| `    ├── nervures/` | |   |   |   |   |   |   | |  |  |
-| `    │   └── Nervure 01.stl` | `Nervure 01.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/volet/nervures/Nervure 01.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/volet/nervures/Nervure 01.stl) |
-| `    └── sections/` | |   |   |   |   |   |   | |  |  |
-| `        └── Section 01.stl` | `Section 01.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/aile gauche/volet/sections/Section 01.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile gauche/volet/sections/Section 01.stl) |
-
----
-
-## fuselage
-
-_2 fichier(s) STL_
-
-| Structure | Fichier | % Remplissage | Type Remplissage | Couches Dessus | Couches Dessous | Ancre (mm) | Ancre Max (mm) | 🔍 | ⬇️ |
-|-----------|---------|:------:|:------:|:------:|:------:|:------:|:------:| :---: | :---: |
-| `├── Nervure 01.stl` | `Nervure 01.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/fuselage/Nervure 01.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/fuselage/Nervure 01.stl) |
-| `└── Nervure 02.stl` | `Nervure 02.stl` | — | — | — | — | — | — | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/fuselage/Nervure 02.stl) | [⬇️](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/fuselage/Nervure 02.stl) |
-
----
+| Sous-dossier | Nom du fichier | Lien direct |
+| :--- | :--- | :--- |
+| `nervures` | Nervure 01.stl | [Ouvrir](stl/aile%20gauche/aileron/nervures/Nervure%2001.stl) |
+| `sections` | Section 01.stl | [Ouvrir](stl/aile%20gauche/aileron/sections/Section%2001.stl) |
+| `nervures` | Nervure 01 - Copie (2).stl | [Ouvrir](stl/aile%20gauche/nervures/Nervure%2001%20-%20Copie%20%282%29.stl) |
+| `nervures` | Nervure 01 - Copie.stl | [Ouvrir](stl/aile%20gauche/nervures/Nervure%2001%20-%20Copie.stl) |
+| `nervures` | Nervure 01.stl | [Ouvrir](stl/aile%20gauche/nervures/Nervure%2001.stl) |
+| `sections` | Section 01 - Copie (2).stl | [Ouvrir](stl/aile%20gauche/sections/Section%2001%20-%20Copie%20%282%29.stl) |
+| `sections` | Section 01 - Copie.stl | [Ouvrir](stl/aile%20gauche/sections/Section%2001%20-%20Copie.stl) |
+| `sections` | Section 01.stl | [Ouvrir](stl/aile%20gauche/sections/Section%2001.stl) |
+| `nervures` | Nervure 01.stl | [Ouvrir](stl/aile%20gauche/volet/nervures/Nervure%2001.stl) |
+| `sections` | Section 01.stl | [Ouvrir](stl/aile%20gauche/volet/sections/Section%2001.stl) |
+| `fuselage` | Nervure 01.stl | [Ouvrir](stl/fuselage/Nervure%2001.stl) |
+| `fuselage` | Nervure 02.stl | [Ouvrir](stl/fuselage/Nervure%2002.stl) |
