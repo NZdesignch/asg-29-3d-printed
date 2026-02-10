@@ -3,5 +3,4 @@
 ![Perspective](image/perspective.png)
 
 ## 📋 Nomenclature
-<!-- BOM_START -->
-<!-- BOM_END -->
+[![BOM](https://img.shields.io)](bom.md)
