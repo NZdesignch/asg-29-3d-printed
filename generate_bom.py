@@ -17,7 +17,7 @@ def generate_bom():
     else:
         print_settings = {}
 
-    # Définition des valeurs par défaut (SANS support ni layer_height)
+    # Définition des valeurs par défaut
     default_settings = {
         "perimeters": "3",
         "top_solid_layers": "4",
@@ -45,8 +45,8 @@ def generate_bom():
                 f.write(f"## 📦 Module : {module.name.replace('_', ' ')}\n")
                 f.write(f"Section : `{l1.name}`\n\n")
                 
-                # En-têtes textuels clairs
-                f.write("| Structure | Périmètres | Couches | Densité | Pattern | Ancre / Max | Vue 3D | Download |\n")
+                # --- EN-TÊTES AVEC PARENTHÈSES POUR MAX ---
+                f.write("| Structure | Périmètres | Couches | Densité | Pattern | Ancre (Max) | Vue 3D | Download |\n")
                 f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
 
                 for item in sorted(list(module.rglob("*"))):
@@ -61,9 +61,8 @@ def generate_bom():
                         per, tb, dens, pat, anc, view, dl = ["-"] * 7
                         
                         if item.suffix.lower() == ".stl":
-                            # Fusion intelligente pour ne garder que les clés voulues
+                            # Nettoyage et fusion des réglages
                             current = print_settings.get(rel_path, {})
-                            # On ne garde que les clés présentes dans default_settings
                             settings = {k: current.get(k, v) for k, v in default_settings.items()}
                             print_settings[rel_path] = settings
                             
@@ -71,7 +70,9 @@ def generate_bom():
                             tb = f"🔝{settings['top_solid_layers']} / ⬇️{settings['bottom_solid_layers']}"
                             dens = settings['fill_density']
                             pat = settings['fill_pattern']
-                            anc = f"{settings['infill_anchor']} / {settings['infill_anchor_max']}"
+                            
+                            # --- DONNÉES AVEC PARENTHÈSES ---
+                            anc = f"{settings['infill_anchor']} ({settings['infill_anchor_max']})"
                             
                             url_path = urllib.parse.quote(rel_path)
                             view = f"[👁️]({url_path})"
@@ -82,7 +83,7 @@ def generate_bom():
                 
                 f.write("\n---\n\n")
 
-    # Sauvegarde du JSON "propre"
+    # Sauvegarde du JSON formaté
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(print_settings, f, indent=4, ensure_ascii=False)
 
