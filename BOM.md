@@ -9,11 +9,19 @@
 
 ---
 
-## 📂 Dossier : stl/aile gauche
+## 📂 Dossier : stl/aile gauche/nervures
 
 | Fichier | Quantité | Note |
 | :--- | :---: | :--- |
 | Nervure 01.stl | 1 | |
+
+---
+
+## 📂 Dossier : stl/aile gauche/sections
+
+| Fichier | Quantité | Note |
+| :--- | :---: | :--- |
+| Section 01.stl | 1 | |
 
 ---
 
