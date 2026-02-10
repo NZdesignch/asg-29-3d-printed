@@ -1,18 +1,31 @@
-)
+name: Generate STL BOM
+
+on:
+  push:
+    paths:
+      - '**.stl' # Se déclenche uniquement si des fichiers STL changent
+  workflow_dispatch: # Permet de le lancer manuellement
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Autorise l'action à modifier ton dépôt
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.x'
 
-      - name: Exécuter le script de génération
-        run: python generate_bom.py
+      - name: Run BOM script
+        run: python generate_bom.py # Assure-toi que ton script s'appelle ainsi
 
-      - name: Commiter et Pousser le fichier BOM.md
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add BOM.md
-          if git diff --quiet && git diff --staged --quiet; then
-            echo "Aucun changement détecté."
-          else
-            git commit -m "Mise à jour automatique du BOM.md"
-            git push
-          fi
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: mise à jour automatique de la nomenclature (BOM)"
+          file_pattern: 'BOM.md'
