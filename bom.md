@@ -1,4 +1,10 @@
-# 🛠️ Bill of Materials (BOM)
+# 🛠️ Nomenclature (BOM)
+
+## 📌 Sommaire
+- [Module : aile gauche](#-module--aile-gauche)
+- [Module : fuselage](#-module--fuselage)
+
+---
 
 ## ⚙️ Paramètres d'Impression Généraux
 
@@ -34,6 +40,8 @@ Section : `stl`
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **sections** | - | - | - | - |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Section 01.stl | 🟢 | 3 | [👁️](stl/aile%20gauche/volet/sections/Section%2001.stl) | [💾](stl/aile%20gauche/volet/sections/Section%2001.stl?raw=true) |
 
+[⬆️ Retour au sommaire](#-sommaire)
+
 ---
 
 ## 📦 Module : fuselage
@@ -43,6 +51,8 @@ Section : `stl`
 | :--- | :---: | :---: | :---: | :---: |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 01.stl | 🟢 | 3 | [👁️](stl/fuselage/Nervure%2001.stl) | [💾](stl/fuselage/Nervure%2001.stl?raw=true) |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 02.stl | 🟢 | 3 | [👁️](stl/fuselage/Nervure%2002.stl) | [💾](stl/fuselage/Nervure%2002.stl?raw=true) |
+
+[⬆️ Retour au sommaire](#-sommaire)
 
 ---
 
