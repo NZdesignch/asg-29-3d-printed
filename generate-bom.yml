@@ -1,0 +1,55 @@
+name: Generate BOM
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "stl/**.stl"
+      - "params.json"
+      - "generate_bom.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-bom:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Générer bom.md
+        run: |
+          python generate_bom.py \
+            --repo-root  "$GITHUB_WORKSPACE" \
+            --json       params.json \
+            --stl-dir    stl \
+            --output     bom.md \
+            --repo-url   "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            --branch     "$GITHUB_REF_NAME"
+
+      - name: Vérifier si bom.md a changé
+        id: check_changes
+        run: |
+          git diff --quiet bom.md && echo "changed=false" >> $GITHUB_OUTPUT \
+                                  || echo "changed=true"  >> $GITHUB_OUTPUT
+
+      - name: Committer et pousser bom.md
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add bom.md
+          git commit -m "chore: mise à jour automatique de bom.md [skip ci]"
+          git push
