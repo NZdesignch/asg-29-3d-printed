@@ -27,6 +27,12 @@ jobs:
       - name: Run BOM Script
         run: python generate_bom.py
 
+      - name: Inject BOM into README
+        run: |
+          # Lit BOM.md, l'échappe pour le script, et l'insère entre les balises du README
+          BOM_CONTENT=$(cat BOM.md)
+          perl -i -0777 -pe "s/(<!-- BOM_START -->).*(<!-- BOM_END -->)/\$1\n$BOM_CONTENT\n\$2/sg" README.md
+
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
