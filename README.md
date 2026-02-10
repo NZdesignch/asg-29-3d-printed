@@ -8,18 +8,18 @@ Réalisation d'un modèle réduit télécommande du planeur ASG 29 à l'échelle
 
 | Catégorie | Caractéristique | Valeur |
 | :--- | :--- | :--- |
-| **Dimensions** | 📐 Envergure | `2000 mm` |
-| | 📏 Longueur | `1100 mm` |
-| | 🪽 Surface alaire | `28.8 dm²` |
-| **Aérodynamique**| 📉 Profil d'aile | `RG 15` |
-| | ⚖️ Allongement | `9.5` |
-| | 📐 Vé longitudinal | `1.2°` |
-| **Masse & Charge**| ⚖️ Masse en vol | `580 g` |
-| | 🏋️ Charge alaire | `20 g/dm²` |
-| | 📍 Centrage (CG) | `91 mm` |
-| **Équipement** | 🔋 Alimentation | LiPo 2S `800 mAh` |
-| | 🎮 Fonctions RC | Prof., Dir., Ail. |
-| | 🛠️ Servos | 4x Micro-servos |
+| **Dimensions** | 📐 Envergure | `3750 mm` |
+| | 📏 Longueur | `--- mm` |
+| | 🪽 Surface alaire | `--- dm²` |
+| **Aérodynamique**| 📉 Profil d'aile | `HQ 3.0/12` `HQ 3.0/14` |
+| | ⚖️ Allongement | `---` |
+| | 📐 Vé longitudinal | `1.5°` |
+| **Masse & Charge**| ⚖️ Masse en vol | `4500 g` |
+| | 🏋️ Charge alaire | `--- g/dm²` |
+| | 📍 Centrage (CG) | `--- mm` |
+| **Eléctronique** | 🔋 Alimentation | LiPo 5S `--- mAh` |
+| | 🎮 Fonctions RC | `Aileron` `Volet` `Profondeur` `Direction` `Train rentrant` `Turbine escamotable`|
+| | 🛠️ Servos | `6x` `KST X10 mini` `6x` `KST CM653`|
 
 ## 📋 Nomenclature
 [Nomenclature](BOM.md)
