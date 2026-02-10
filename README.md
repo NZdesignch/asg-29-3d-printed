@@ -24,5 +24,5 @@ Réalisation d'un modèle réduit télécommande du planeur ASG 29 à l'échelle
 
 ## 📋 Nomenclature
 
-La [Nomenclature](BOM.md) présente chaque pièce à imprimer au format `STL` avec les paramètres d'impression importants.
+La [Nomenclature](BOM.md) présente chaque pièce à imprimer au format `STL` avec les paramètres d'impression importantsà respecter.
 
