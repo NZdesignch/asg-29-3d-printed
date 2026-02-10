@@ -53,3 +53,20 @@ def generate_bom():
 
 if __name__ == "__main__":
     generate_bom()
+
+def update_readme(bom_content):
+    with open("README.md", "r", encoding="utf-8") as f:
+        readme = f.read()
+
+    # On cherche des balises de commentaire dans ton README pour savoir où coller
+    start_tag = "<!-- BOM_START -->"
+    end_tag = "<!-- BOM_END -->"
+    
+    if start_tag in readme and end_tag in readme:
+        new_readme = re.sub(f"{start_tag}.*?{end_tag}", f"{start_tag}\n\n{bom_content}\n\n{end_tag}", readme, flags=re.DOTALL)
+        with open("README.md", "w", encoding="utf-8") as f:
+            f.write(new_readme)
+
+# Appelle cette fonction à la fin de ton script
+update_readme(content)
+
