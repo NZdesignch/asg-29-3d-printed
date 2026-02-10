@@ -1,22 +1,20 @@
 # ✈️ Nomenclature ASG 29
 
+> *Génération automatique de la liste des pièces de fabrication.*
+
 ## 📦 AILE GAUCHE
 
-| Pièce (Fichier STL) | Qté | Aperçu | Téléchargement |
+| Pièce | Qté | Vue 3D | Fichier |
 | :--- | :---: | :---: | :---: |
 | **└── 📁 nervures** | | | |
-| &nbsp;&nbsp;&nbsp;&nbsp;📄 <code>Nervure 01.stl</code> | `x01` | <a href="https://github.com/blob/main/stl/aile%20gauche/nervures/Nervure%2001.stl"><code>👁️ VIEW</code></a> | <a href="https://github.com/raw/main/stl/aile%20gauche/nervures/Nervure%2001.stl"><code>📥 STL</code></a> |
+| &nbsp;&nbsp;&nbsp;&nbsp;📄 <samp>Nervure 01.stl</samp> | <code>01</code> | [<samp>👁️ Visualiser</samp>](https://github.com/blob/main/stl/aile%20gauche/nervures/Nervure%2001.stl) | [<samp>📥 Télécharger</samp>](https://github.com/raw/main/stl/aile%20gauche/nervures/Nervure%2001.stl) |
 | **└── 📁 sections** | | | |
-| &nbsp;&nbsp;&nbsp;&nbsp;📄 <code>Section 01.stl</code> | `x01` | <a href="https://github.com/blob/main/stl/aile%20gauche/sections/Section%2001.stl"><code>👁️ VIEW</code></a> | <a href="https://github.com/raw/main/stl/aile%20gauche/sections/Section%2001.stl"><code>📥 STL</code></a> |
-
----
+| &nbsp;&nbsp;&nbsp;&nbsp;📄 <samp>Section 01.stl</samp> | <code>01</code> | [<samp>👁️ Visualiser</samp>](https://github.com/blob/main/stl/aile%20gauche/sections/Section%2001.stl) | [<samp>📥 Télécharger</samp>](https://github.com/raw/main/stl/aile%20gauche/sections/Section%2001.stl) |
 
 ## 📦 FUSELAGE
 
-| Pièce (Fichier STL) | Qté | Aperçu | Téléchargement |
+| Pièce | Qté | Vue 3D | Fichier |
 | :--- | :---: | :---: | :---: |
-| 📄 <code>Nervure 01.stl</code> | `x01` | <a href="https://github.com/blob/main/stl/fuselage/Nervure%2001.stl"><code>👁️ VIEW</code></a> | <a href="https://github.com/raw/main/stl/fuselage/Nervure%2001.stl"><code>📥 STL</code></a> |
-| 📄 <code>Nervure 02.stl</code> | `x02` | <a href="https://github.com/blob/main/stl/fuselage/Nervure%2002.stl"><code>👁️ VIEW</code></a> | <a href="https://github.com/raw/main/stl/fuselage/Nervure%2002.stl"><code>📥 STL</code></a> |
-
----
+| 📄 <samp>Nervure 01.stl</samp> | <code>01</code> | [<samp>👁️ Visualiser</samp>](https://github.com/blob/main/stl/fuselage/Nervure%2001.stl) | [<samp>📥 Télécharger</samp>](https://github.com/raw/main/stl/fuselage/Nervure%2001.stl) |
+| 📄 <samp>Nervure 02.stl</samp> | <code>02</code> | [<samp>👁️ Visualiser</samp>](https://github.com/blob/main/stl/fuselage/Nervure%2002.stl) | [<samp>📥 Télécharger</samp>](https://github.com/raw/main/stl/fuselage/Nervure%2002.stl) |
 
