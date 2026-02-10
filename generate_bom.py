@@ -6,7 +6,6 @@ from pathlib import Path
 import urllib.parse
 
 def get_github_repo_info():
-    """Récupère l'URL raw de GitHub pour les téléchargements directs."""
     try:
         remote_url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"]).decode().strip()
         repo_path = remote_url.replace("https://github.com", "").replace(".git", "").replace("git@github.com:", "")
@@ -15,7 +14,6 @@ def get_github_repo_info():
         return "."
 
 def generate_bom():
-    # --- CONFIGURATION ---
     root_dir = Path(".")
     output_file = "bom.md"
     settings_file = "print_settings.json"
@@ -25,30 +23,37 @@ def generate_bom():
     archive_dir.mkdir(exist_ok=True)
     base_raw_url = get_github_repo_info()
 
-    # --- 1. CHARGEMENT ET PROTECTION DES DONNÉES ---
+    # --- 1. LECTURE DU JSON ---
     existing_data = {}
     if Path(settings_file).exists():
         try:
             with open(settings_file, "r", encoding="utf-8") as f:
-                content = f.read().strip()
-                if content:
-                    existing_data = json.loads(content)
-        except json.JSONDecodeError as e:
-            # SÉCURITÉ : Bloque tout si le JSON est corrompu pour éviter d'écraser vos données
-            print(f"❌ ERREUR SYNTAXE JSON (Ligne {e.lineno}) : Le script s'arrête pour protéger vos réglages.")
+                existing_data = json.load(f)
+        except Exception as e:
+            print(f"❌ Erreur lecture JSON: {e}")
             return 
 
-    # --- 2. RÉCUPÉRATION DES PARAMÈTRES COMMUNS (Mis à jour depuis le JSON) ---
-    common_keys = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_pattern", "infill_anchor", "infill_anchor_max"]
-    old_common = existing_data.get("COMMON_SETTINGS", {})
+    # --- 2. EXTRACTION DES VALEURS COMMUNES ---
+    # On définit les clés exactes attendues
+    common_keys = [
+        "top_solid_layers", "bottom_solid_layers", 
+        "fill_density", "fill_pattern", 
+        "infill_anchor", "infill_anchor_max"
+    ]
     
-    # On CONSERVE ce qui est déjà rempli (non-null), sinon on initialise à None
-    new_data = {
-        "COMMON_SETTINGS": {k: old_common.get(k) for k in common_keys}
-    }
+    # On récupère le bloc COMMON_SETTINGS actuel
+    current_common = existing_data.get("COMMON_SETTINGS", {})
+    
+    # On reconstruit le dictionnaire pour s'assurer qu'il est propre
+    new_data = {"COMMON_SETTINGS": {}}
+    for k in common_keys:
+        # On garde la valeur du JSON, sinon None
+        new_data["COMMON_SETTINGS"][k] = current_common.get(k)
+
+    # Récupération pour l'affichage Markdown
     common = new_data["COMMON_SETTINGS"]
 
-    # --- 3. ANALYSE DES RÉPERTOIRES (Niveau 1 et 2) ---
+    # --- 3. ANALYSE DES DOSSIERS ---
     level1_dirs = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
     modules_list = []
     for l1 in level1_dirs:
@@ -60,16 +65,20 @@ def generate_bom():
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("# 🛠️ Nomenclature (BOM)\n\n")
 
-        # --- SECTION : SOMMAIRE ---
+        # SOMMAIRE
         f.write("## 📌 Sommaire\n")
         for mod_path, _ in modules_list:
             anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
             f.write(f"- [Module : {mod_path.name.replace('_', ' ')}](#-module--{anchor})\n")
         f.write("\n---\n\n")
 
-        # --- SECTION : PARAMÈTRES COMMUNS (S'affiche à jour) ---
+        # --- TABLEAU RÉCAPITULATIF (SECTION PROBLÉMATIQUE CORRIGÉE) ---
         f.write("## ⚙️ Paramètres d'Impression Généraux\n\n")
-        def check(val): return val if val is not None else "🔴 _À définir_"
+        def check(val): 
+            # Si la valeur est None ou une chaîne vide, on met l'alerte rouge
+            if val is None or str(val).strip() == "":
+                return "🔴 _À définir_"
+            return f"**{val}**"
 
         f.write("| Paramètre | Valeur |\n")
         f.write("| :--- | :--- |\n")
@@ -79,19 +88,15 @@ def generate_bom():
         
         f.write("---\n\n")
 
-        # --- GÉNÉRATION DES TABLEAUX PAR MODULE ---
+        # TABLEAUX PAR MODULE
         for module_path, parent_name in modules_list:
-            # Gestion de l'archive ZIP sans espaces
             safe_name = module_path.name.replace(" ", "_")
             zip_filename = f"module_{safe_name}"
             shutil.make_archive(str(archive_dir / zip_filename), 'zip', root_dir=module_path)
-            zip_url = f"{base_raw_url}/archives/{urllib.parse.quote(zip_filename + '.zip')}"
-
-            f.write(f"## 📦 Module : {module_path.name.replace('_', ' ')}\n")
-            f.write(f"Section : `{parent_name}` | **[🗜️ Télécharger ZIP]({zip_url})**\n\n")
             
-            f.write("| Structure | État | Périmètres | Vue 3D | Download |\n")
-            f.write("| :--- | :---: | :---: | :---: | :---: |\n")
+            f.write(f"## 📦 Module : {module_path.name.replace('_', ' ')}\n")
+            f.write(f"Section : `{parent_name}` | **[🗜️ Télécharger ZIP]({base_raw_url}/archives/{urllib.parse.quote(zip_filename)}.zip)**\n\n")
+            f.write("| Structure | État | Périmètres | Vue 3D | Download |\n| :--- | :---: | :---: | :---: | :---: |\n")
 
             for item in sorted(list(module_path.rglob("*"))):
                 if item.is_dir() or item.suffix.lower() == ".stl":
@@ -100,23 +105,20 @@ def generate_bom():
                     indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
                     
                     if item.suffix.lower() == ".stl":
-                        # RÉCUPÉRATION SÉCURISÉE : on ne réinitialise jamais ce qui est différent de null
+                        # Protection des données individuelles
                         old_perim = existing_data.get(rel_path, {}).get("perimeters")
                         new_data[rel_path] = {"perimeters": old_perim}
                         
                         status = "🟢" if old_perim is not None else "🔴"
                         per = old_perim if old_perim is not None else "---"
                         url_path = urllib.parse.quote(rel_path)
-                        view = f"[👁️]({url_path})"
-                        dl = f"[💾]({base_raw_url}/{url_path})"
-
-                        f.write(f"| {indent}📄 {item.name} | {status} | {per} | {view} | {dl} |\n")
+                        
+                        f.write(f"| {indent}📄 {item.name} | {status} | {per} | [👁️]({url_path}) | [💾]({base_raw_url}/{url_path}) |\n")
                     else:
                         f.write(f"| {indent}📂 **{item.name}** | - | - | - | - |\n")
-                
             f.write("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---\n\n")
 
-    # --- 4. SAUVEGARDE DU JSON (Formaté proprement) ---
+    # --- 4. RÉÉCRITURE PROPRE DU JSON ---
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(new_data, f, indent=4, ensure_ascii=False)
 
