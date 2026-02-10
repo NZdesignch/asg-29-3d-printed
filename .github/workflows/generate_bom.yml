@@ -27,11 +27,20 @@ jobs:
       - name: Run BOM Script
         run: python generate_bom.py
 
-      - name: Inject BOM into README
+      - name: Update README with BOM content
         run: |
-          # Lit BOM.md, l'échappe pour le script, et l'insère entre les balises du README
-          BOM_CONTENT=$(cat BOM.md)
-          perl -i -0777 -pe "s/(<!-- BOM_START -->).*(<!-- BOM_END -->)/\$1\n$BOM_CONTENT\n\$2/sg" README.md
+          # On crée un fichier temporaire pour reconstruire le README
+          # On récupère tout ce qui est AVANT la balise START
+          sed -n '1,/<!-- BOM_START -->/p' README.md > README.tmp
+          
+          # On ajoute le contenu de BOM.md
+          cat BOM.md >> README.tmp
+          
+          # On ajoute tout ce qui est APRÈS la balise END
+          sed -n '/<!-- BOM_END -->/,$p' README.md >> README.tmp
+          
+          # On remplace l'ancien README par le nouveau
+          mv README.tmp README.md
 
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
