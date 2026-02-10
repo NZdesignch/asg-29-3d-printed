@@ -2,10 +2,10 @@
     "COMMON_SETTINGS": {
         "top_solid_layers": 3,
         "bottom_solid_layers": 3,
-        "fill_density": 4 "%",
+        "fill_density": 4,
         "fill_pattern": "Grille",
-        "infill_anchor": 2 "mm",
-        "infill_anchor_max": 2 "mm"
+        "infill_anchor": 2,
+        "infill_anchor_max": 2
     },
     "stl/aile gauche/aileron/nervures/Nervure 01.stl": {
         "perimeters": null
