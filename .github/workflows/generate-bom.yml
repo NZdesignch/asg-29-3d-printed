@@ -2,33 +2,37 @@ name: Update STL BOM
 on:
   push:
     paths:
-      - '**/*.stl'              # Déclenche si un fichier STL est ajouté/modifié
-      - 'print_settings.json'   # Déclenche si vous modifiez manuellement les réglages
-      - 'generate_bom.py'       # <--- DÉCLENCHE SI LE SCRIPT CHANGE
-      - '.github/workflows/*.yml' # <--- DÉCLENCHE SI LE YAML CHANGE
-  workflow_dispatch:            # Permet de lancer manuellement depuis l'onglet Actions
+      - '**/*.stl'
+      - 'print_settings.json'
+      - 'generate_bom.py'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write           # Nécessaire pour autoriser le bot à commiter
+      contents: write # Important !
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Récupère tout l'historique pour git config
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Run BOM Generator
+      - name: Generate BOM
         run: python generate_bom.py
 
       - name: Commit and Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "System: Auto-update BOM and Settings [skip ci]"
+          commit_message: "System: Auto-update Nomenclature [skip ci]"
           file_pattern: 'bom.md print_settings.json'
-          skip_dirty_check: true # Évite l'erreur "Code 1" si aucune modification n'est générée
+          # Ces options évitent de planter si le script ne change rien au texte
+          skip_dirty_check: true 
+          skip_fetch: true
+          disable_globbing: true
