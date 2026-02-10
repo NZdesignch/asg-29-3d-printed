@@ -1,38 +1,56 @@
+# Nom du workflow tel qu'il apparaîtra dans l'onglet "Actions" de GitHub
 name: Update STL BOM
+
+# Définition des déclencheurs (quand est-ce que le script doit s'élancer ?)
 on:
   push:
+    # Le script s'exécute uniquement si les fichiers modifiés correspondent à ces chemins
     paths:
-      - '**/*.stl'
-      - 'print_settings.json'
-      - 'generate_bom.py'
+      - '**/*.stl'              # Tout ajout ou modification de fichier 3D
+      - 'print_settings.json'   # Si tu modifies manuellement les réglages
+      - 'generate_bom.py'       # Si tu mets à jour la logique du script Python
+  
+  # Permet de lancer le script manuellement via un bouton dans l'interface GitHub
   workflow_dispatch:
 
 jobs:
   build:
+    # Utilise la dernière version de serveur Ubuntu (Linux) fournie par GitHub
     runs-on: ubuntu-latest
+    
+    # CRUCIAL : Donne au robot l'autorisation d'écrire et de sauvegarder sur ton dépôt
     permissions:
-      contents: write # Important !
+      contents: write
     
     steps:
+      # Étape 1 : Copie les fichiers de ton dépôt sur le serveur virtuel
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Récupère tout l'historique pour git config
 
+      # Étape 2 : Installe Python sur le serveur
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
+      # Étape 3 : Exécute ton script pour générer bom.md et mettre à jour le JSON
       - name: Generate BOM
         run: python generate_bom.py
 
+      # Étape 4 : Sauvegarde les modifications (Commit & Push)
       - name: Commit and Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
+          # Message qui apparaîtra dans l'historique Git
+          # [skip ci] est important : il évite que cette action ne se redéclenche elle-même
           commit_message: "System: Auto-update Nomenclature [skip ci]"
+          
+          # Liste des fichiers que le robot a le droit de modifier
           file_pattern: 'bom.md print_settings.json'
-          # Ces options évitent de planter si le script ne change rien au texte
-          skip_dirty_check: true 
+          
+          # OPTION DE TOLÉRANCE : Si le script n'a rien changé (tout est déjà à jour),
+          # cette option empêche GitHub de renvoyer l'erreur "Code 1".
+          skip_dirty_check: true
+          
+          # Optimisation pour éviter de retélécharger l'historique inutilement
           skip_fetch: true
-          disable_globbing: true
