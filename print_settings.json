@@ -1,6 +1,6 @@
 {
     "stl/aile gauche/nervures/Nervure 01.stl": {
-        "perimetres": null,
+        "perimetres": 2,
         "couches_dessus": null,
         "couches_dessous": null,
         "remplissage": null,
