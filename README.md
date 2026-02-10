@@ -4,10 +4,9 @@ Réalisation d'un modèle réduit télécommande du planeur ASG 29 à l'échelle
 
 ![Perspective](image/perspective.png)
 
-## 📋 Nomenclature
-[Nomenclature](bom.md)
 
 
+## Caractéristiques
 
 | Caractéristique | Spécification | Note |
 | :--- | :---: | ---: |
@@ -16,4 +15,6 @@ Réalisation d'un modèle réduit télécommande du planeur ASG 29 à l'échelle
 | **Stockage** | 512 Go | SSD ultra-rapide |
 | **Écran** | Liquid Retina XDR | 14.2 pouces |
 
+## 📋 Nomenclature
+[Nomenclature](BOM.md)
 
