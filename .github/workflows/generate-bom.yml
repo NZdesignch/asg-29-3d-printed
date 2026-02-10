@@ -39,17 +39,18 @@ jobs:
             --repo-url   "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
             --branch     "$GITHUB_REF_NAME"
 
-      - name: Vérifier si bom.md a changé
+      - name: Vérifier si bom.md a changé (nouveau fichier inclus)
         id: check_changes
         run: |
-          git diff --quiet bom.md && echo "changed=false" >> $GITHUB_OUTPUT \
-                                  || echo "changed=true"  >> $GITHUB_OUTPUT
+          git add bom.md
+          git diff --cached --quiet bom.md \
+            && echo "changed=false" >> $GITHUB_OUTPUT \
+            || echo "changed=true"  >> $GITHUB_OUTPUT
 
       - name: Committer et pousser bom.md
         if: steps.check_changes.outputs.changed == 'true'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add bom.md
           git commit -m "chore: mise à jour automatique de bom.md [skip ci]"
           git push
