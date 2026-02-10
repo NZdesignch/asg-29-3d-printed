@@ -17,7 +17,7 @@ def generate_bom():
     else:
         print_settings = {}
 
-    # Valeurs par défaut à "null" pour forcer la saisie ultérieure
+    # Valeurs par défaut à "null" pour forcer la saisie
     default_settings = {
         "perimeters": None,
         "top_solid_layers": None,
@@ -28,6 +28,7 @@ def generate_bom():
         "infill_anchor_max": None
     }
 
+    # Analyse du Niveau 1 (ex: MTL)
     level1_dirs = [d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude]
 
     with open(output_file, "w", encoding="utf-8") as f:
@@ -35,6 +36,7 @@ def generate_bom():
         f.write("> **Statut :** 🟢 Complété | 🔴 À renseigner dans `print_settings.json`\n\n")
 
         for l1 in level1_dirs:
+            # Analyse du Niveau 2 (ex: Aile, Fuselage)
             level2_dirs = sorted([d for d in l1.iterdir() if d.is_dir()])
             
             for module in level2_dirs:
@@ -44,8 +46,8 @@ def generate_bom():
                 f.write(f"## 📦 Module : {module.name.replace('_', ' ')}\n")
                 f.write(f"Section : `{l1.name}`\n\n")
                 
-                # Ajout de la colonne Statut
-                f.write("| Structure | État | Périmètres | Couches | Densité | Pattern | Ancre (Max) | 👁️ | 💾 |\n")
+                # --- EN-TÊTES TEXTUELS POUR VUE ET TÉLÉCHARGEMENT ---
+                f.write("| Structure | État | Périmètres | Couches | Densité | Pattern | Ancre (Max) | Vue 3D | Download |\n")
                 f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
 
                 for item in sorted(list(module.rglob("*"))):
@@ -53,23 +55,22 @@ def generate_bom():
                         rel_path = str(item.relative_to(root_dir))
                         depth = len(item.relative_to(module).parts)
                         
+                        # Hiérarchie avec slashs
                         indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
                         icon = "📂" if item.is_dir() else "📄"
                         
-                        # Init colonnes
                         status, per, tb, dens, pat, anc, view, dl = ["-"] * 8
                         
                         if item.suffix.lower() == ".stl":
                             current = print_settings.get(rel_path, {})
-                            # On garde les valeurs existantes ou on met None
                             settings = {k: current.get(k, v) for k, v in default_settings.items()}
                             print_settings[rel_path] = settings
                             
-                            # Vérification si toutes les valeurs sont renseignées
+                            # Vérification du remplissage
                             is_complete = all(v is not None and str(v).strip() != "" for v in settings.values())
                             status = "🟢" if is_complete else "🔴"
                             
-                            # Formatage des valeurs (affiche "---" si null)
+                            # Helper pour l'affichage des valeurs nulles
                             get_v = lambda k: settings[k] if settings[k] is not None else "---"
                             
                             per = get_v('perimeters')
@@ -87,7 +88,7 @@ def generate_bom():
                 
                 f.write("\n---\n\n")
 
-    # Sauvegarde JSON avec indentation pour édition facile
+    # Sauvegarde du JSON formaté
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(print_settings, f, indent=4, ensure_ascii=False)
 
