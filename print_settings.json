@@ -6,10 +6,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/aileron/sections/Section 01.stl": {
         "perimeters": "3",
@@ -18,10 +15,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/nervures/Nervure 01 - Copie (2).stl": {
         "perimeters": "3",
@@ -30,10 +24,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/nervures/Nervure 01 - Copie.stl": {
         "perimeters": "3",
@@ -42,10 +33,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/nervures/Nervure 01.stl": {
         "perimeters": "3",
@@ -54,10 +42,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/sections/Section 01 - Copie (2).stl": {
         "perimeters": "3",
@@ -66,10 +51,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/sections/Section 01 - Copie.stl": {
         "perimeters": "3",
@@ -78,10 +60,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/sections/Section 01.stl": {
         "perimeters": "3",
@@ -90,10 +69,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/volet/nervures/Nervure 01.stl": {
         "perimeters": "3",
@@ -102,10 +78,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/aile gauche/volet/sections/Section 01.stl": {
         "perimeters": "3",
@@ -114,10 +87,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/fuselage/Nervure 01.stl": {
         "perimeters": "3",
@@ -126,10 +96,7 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     },
     "stl/fuselage/Nervure 02.stl": {
         "perimeters": "3",
@@ -138,9 +105,6 @@
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non",
-        "layer_height": "0.2mm",
-        "infill": "15%"
+        "infill_anchor_max": "50"
     }
 }
