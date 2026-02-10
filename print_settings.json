@@ -1,0 +1,62 @@
+{
+    "stl/aile gauche/aileron/nervures/Nervure 01.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/aileron/sections/Section 01.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/nervures/Nervure 01 - Copie (2).stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/nervures/Nervure 01 - Copie.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/nervures/Nervure 01.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/sections/Section 01 - Copie (2).stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/sections/Section 01 - Copie.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/sections/Section 01.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/volet/nervures/Nervure 01.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/aile gauche/volet/sections/Section 01.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/fuselage/Nervure 01.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    },
+    "stl/fuselage/Nervure 02.stl": {
+        "layer_height": "0.2mm",
+        "infill": "15%",
+        "supports": "Non"
+    }
+}
