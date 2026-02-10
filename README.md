@@ -1,4 +1,4 @@
-# Planeur ASG 29 imprimé en 3D
+# ✈️ Planeur ASG 29 imprimé en 3D
 
 ## 📋 Nomenclature
 <!-- BOM_START -->
