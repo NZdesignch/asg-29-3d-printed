@@ -1,16 +1,19 @@
-name: Generate STL BOM
+name: Auto Generate BOM
 
 on:
   push:
+    # Se déclenche si des fichiers changent dans le dossier stl ou si on édite le JSON
     paths:
-      - '**.stl' # Se déclenche uniquement si des fichiers STL changent
-  workflow_dispatch: # Permet de le lancer manuellement
+      - 'stl/**'
+      - 'print_settings.json'
+      - 'generate_bom.py'
+  workflow_dispatch: # Permet de le lancer manuellement depuis l'onglet Actions
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Autorise l'action à modifier ton dépôt
+      contents: write # Crucial pour permettre à l'action de modifier ton dépôt
 
     steps:
       - name: Checkout code
@@ -21,11 +24,13 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run BOM script
-        run: python generate_bom.py # Assure-toi que ton script s'appelle ainsi
+      - name: Run BOM Script
+        run: python generate_bom.py
 
-      - name: Commit and push changes
+      - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Auto-update BOM and print_settings.json"
+          commit_message: "style: mise à jour automatique de la nomenclature (BOM)"
           file_pattern: 'BOM.md print_settings.json'
+          commit_author_email: "actions@github.com"
+          commit_author_name: "GitHub Actions Bot"
