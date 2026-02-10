@@ -1,4 +1,4 @@
-# Nomenclature 
+# 📋 Nomenclature 
 
 > `🟢` Configuré | `🔴` Incomplet
 
