@@ -1,56 +1,59 @@
-# Nom du workflow tel qu'il apparaîtra dans l'onglet "Actions" de GitHub
+# Nom affiché dans l'onglet "Actions" de ton dépôt GitHub
 name: Update STL BOM
 
-# Définition des déclencheurs (quand est-ce que le script doit s'élancer ?)
+# Déclencheurs : quand le script doit-il s'exécuter ?
 on:
   push:
-    # Le script s'exécute uniquement si les fichiers modifiés correspondent à ces chemins
+    # Le script se lance si tu modifies l'un de ces éléments
     paths:
-      - '**/*.stl'              # Tout ajout ou modification de fichier 3D
-      - 'print_settings.json'   # Si tu modifies manuellement les réglages
-      - 'generate_bom.py'       # Si tu mets à jour la logique du script Python
+      - '**/*.stl'              # Fichiers 3D
+      - 'print_settings.json'   # Le fichier de paramètres
+      - 'generate_bom.py'       # Le script de génération lui-même
+      - '.github/workflows/*.yml' # Les fichiers de workflow
   
-  # Permet de lancer le script manuellement via un bouton dans l'interface GitHub
+  # Permet de cliquer sur un bouton "Run workflow" manuellement sur GitHub
   workflow_dispatch:
 
 jobs:
   build:
-    # Utilise la dernière version de serveur Ubuntu (Linux) fournie par GitHub
+    # Utilise un serveur virtuel sous Ubuntu
     runs-on: ubuntu-latest
     
-    # CRUCIAL : Donne au robot l'autorisation d'écrire et de sauvegarder sur ton dépôt
+    # CRUCIAL : Autorise le robot à enregistrer des fichiers sur ton dépôt
+    # Si cette ligne manque ou si les réglages du dépôt bloquent, le commit échouera.
     permissions:
       contents: write
     
     steps:
-      # Étape 1 : Copie les fichiers de ton dépôt sur le serveur virtuel
+      # 1. Copie ton code sur le serveur virtuel
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Étape 2 : Installe Python sur le serveur
+      # 2. Installe Python (version 3.10)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # Étape 3 : Exécute ton script pour générer bom.md et mettre à jour le JSON
+      # 3. Exécute ton script Python pour mettre à jour la nomenclature
       - name: Generate BOM
         run: python generate_bom.py
 
-      # Étape 4 : Sauvegarde les modifications (Commit & Push)
+      # 4. Sauvegarde (Commit) les changements s'il y en a
       - name: Commit and Push changes
+        # "continue-on-error" évite que GitHub n'affiche une erreur rouge 
+        # si aucun changement n'a été détecté (Working tree clean).
+        continue-on-error: true 
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          # Message qui apparaîtra dans l'historique Git
-          # [skip ci] est important : il évite que cette action ne se redéclenche elle-même
+          # Message visible dans ton historique Git
+          # [skip ci] évite de relancer ce script en boucle infinie
           commit_message: "System: Auto-update Nomenclature [skip ci]"
           
-          # Liste des fichiers que le robot a le droit de modifier
+          # Fichiers que le robot a le droit de mettre à jour
           file_pattern: 'bom.md print_settings.json'
           
-          # OPTION DE TOLÉRANCE : Si le script n'a rien changé (tout est déjà à jour),
-          # cette option empêche GitHub de renvoyer l'erreur "Code 1".
+          # Options pour éviter les erreurs de statut et les conflits
           skip_dirty_check: true
-          
-          # Optimisation pour éviter de retélécharger l'historique inutilement
           skip_fetch: true
+          disable_globbing: true
