@@ -32,5 +32,5 @@ jobs:
         with:
           commit_message: "style: mise à jour automatique de la nomenclature (BOM)"
           file_pattern: 'BOM.md print_settings.json'
-          commit_author_email: "actions@github.com"
-          commit_author_name: "GitHub Actions Bot"
+          commit_user_email: "actions@github.com"
+          commit_user_name: "GitHub Actions Bot"
