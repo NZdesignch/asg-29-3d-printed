@@ -29,15 +29,14 @@ def generate_bom():
         "supports": "Non"
     }
 
-    # Analyse du niveau 1 (ex: MTL)
+    # Analyse Niveau 1
     level1_dirs = [d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude]
 
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write("# 🛠️ BOM & Paramètres d'Impression\n\n")
-        f.write("> **Légende :** 🧱 Périmètres | ↕️ Top / Bot | 🏁 Densité | 🧩 Pattern | ⚓ Anchor / Max | 👁️ Voir | 💾 DL\n\n")
+        f.write("# 🛠️ Bill of Materials (BOM)\n\n")
 
         for l1 in level1_dirs:
-            # Niveau 2 (ex: Aile_Gauche)
+            # Analyse Niveau 2
             level2_dirs = sorted([d for d in l1.iterdir() if d.is_dir()])
             
             for module in level2_dirs:
@@ -47,8 +46,8 @@ def generate_bom():
                 f.write(f"## 📦 Module : {module.name.replace('_', ' ')}\n")
                 f.write(f"Section : `{l1.name}`\n\n")
                 
-                # Entêtes avec Emojis
-                f.write("| Structure | 🧱 | ↕️ | 🏁 | 🧩 | ⚓ | 👁️ | 💾 |\n")
+                # --- EN-TÊTES EN TEXTE CLAIR ---
+                f.write("| Structure | Périmètres | Couches | Densité | Pattern | Ancre / Max | Vue 3D | Download |\n")
                 f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
 
                 for item in sorted(list(module.rglob("*"))):
@@ -56,7 +55,7 @@ def generate_bom():
                         rel_path = str(item.relative_to(root_dir))
                         depth = len(item.relative_to(module).parts)
                         
-                        # Hiérarchie avec des slashs (/) au lieu de connecteurs type Windows
+                        # Hiérarchie avec slashs
                         indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
                         icon = "📂" if item.is_dir() else "📄"
                         
@@ -68,11 +67,10 @@ def generate_bom():
                             print_settings[rel_path] = settings
                             
                             per = settings['perimeters']
-                            # Utilisation du slash pour séparer les couches
-                            tb = f"{settings['top_solid_layers']} / {settings['bottom_solid_layers']}"
+                            # Emojis conservés uniquement dans les données
+                            tb = f"🔝{settings['top_solid_layers']} / ⬇️{settings['bottom_solid_layers']}"
                             dens = settings['fill_density']
                             pat = settings['fill_pattern']
-                            # Utilisation du slash pour l'ancre d'infill
                             anc = f"{settings['infill_anchor']} / {settings['infill_anchor_max']}"
                             
                             url_path = urllib.parse.quote(rel_path)
@@ -84,7 +82,7 @@ def generate_bom():
                 
                 f.write("\n---\n\n")
 
-    # Sauvegarde finale
+    # Sauvegarde JSON
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(print_settings, f, indent=4, ensure_ascii=False)
 
