@@ -27,5 +27,5 @@ jobs:
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "style: mise à jour automatique de la nomenclature (BOM)"
-          file_pattern: 'BOM.md'
+          commit_message: "Auto-update BOM and print_settings.json"
+          file_pattern: 'BOM.md print_settings.json'
