@@ -51,5 +51,22 @@ def generate_bom():
     with open(CFG["json"], "w", encoding="utf-8") as f: json.dump(data_json, f, indent=4, ensure_ascii=False)
     print("✅ BOM Multi-niveaux généré.")
 
+# --- NOUVEAU : Injection automatique dans le README ---
+    if os.path.exists("README.md"):
+        with open("README.md", "r", encoding="utf-8") as f:
+            readme = f.read()
+        
+        # On remplace tout ce qui se trouve entre les balises
+        pattern = r"<!-- BOM_START -->.*?<!-- BOM_END -->"
+        replacement = f"<!-- BOM_START -->\n{content_md}\n<!-- BOM_END -->"
+        
+        # Le flag re.DOTALL permet de chercher sur plusieurs lignes
+        new_readme = re.sub(pattern, replacement, readme, flags=re.DOTALL)
+        
+        with open("README.md", "w", encoding="utf-8") as f:
+            f.write(new_readme)
+        print("✅ README mis à jour avec le contenu du BOM.")
+    # -------------------------------------------------------
+
 if __name__ == "__main__":
     generate_bom()
