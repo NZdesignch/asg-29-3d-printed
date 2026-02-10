@@ -17,10 +17,11 @@ Réalisation d'un modèle réduit télécommande du planeur ASG 29 à l'échelle
 | **Masse & Charge**| ⚖️ Masse en vol | `4500 g` |
 | | 🏋️ Charge alaire | `--- g/dm²` |
 | | 📍 Centrage (CG) | `--- mm` |
-| **Eléctronique** | 🔋 Alimentation | LiPo 5S `--- mAh` |
+| **Eléctronique** | 🔋 Alimentation | `LiPo` `5S` `--- mAh` |
 | | 🎮 Fonctions RC | `Aileron` `Volet` `Profondeur` `Direction` `Train rentrant` `Turbine escamotable`|
-| | 🛠️ Servos | `6x` `KST X10 mini` `6x` `KST CM653`|
+| | 🛠️ Servos | `6x` `KST X10 mini` `2x` `KST CM653`|
 
 ## 📋 Nomenclature
-[Nomenclature](BOM.md)
+
+La [Nomenclature](BOM.md) présente chaque pièce à imprimer au format `STL` avec les paramètres d'impression importants.
 
