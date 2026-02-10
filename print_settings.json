@@ -1,12 +1,12 @@
 {
     "stl/aile gauche/nervures/Nervure 01.stl": {
         "perimetres": 2,
-        "couches_dessus": null,
-        "couches_dessous": null,
-        "remplissage": null,
-        "motif_remplissage": null,
-        "longueur_ancre": null,
-        "longueur_max_ancre": null
+        "couches_dessus": 3,
+        "couches_dessous": 3,
+        "remplissage": 5,
+        "motif_remplissage": grille,
+        "longueur_ancre": 2,
+        "longueur_max_ancre": 2
     },
     "stl/aile gauche/sections/Section 01.stl": {
         "perimetres": null,
