@@ -1,4 +1,4 @@
-# ✈️ Nomenclature ASG 29
+# Nomenclature 
 
 > `🟢` Configuré | `🔴` Incomplet
 
