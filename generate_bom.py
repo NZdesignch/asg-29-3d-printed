@@ -40,7 +40,7 @@ def generate_bom():
                 indent_file = "&nbsp;&nbsp;&nbsp;&nbsp;" * depth_file + "📄 "
                 layers = f"{info['couches_dessus'] or '-'}↑ {info['couches_dessous'] or '-'}↓"
                 infill = f"{info['remplissage'] or '-'} ({info['motif_remplissage'] or '-'})"
-                anchors = f"{info['longueur_ancre'] or '-'} ➜ {info['longueur_max_ancre'] or '-'}"
+                anchors = f"{info['longueur_ancre'] or '-'} ⇥ {info['longueur_max_ancre'] or '-'}"
                 
                 url = f"{CFG['repo']}/{{t}}/{CFG['branch']}/{urllib.parse.quote(full_path)}"
                 
