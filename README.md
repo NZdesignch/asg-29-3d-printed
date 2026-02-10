@@ -5,5 +5,5 @@ Réalisation d'un modèle réduit télécommande du planeur ASG 29 à l'échelle
 ![Perspective](image/perspective.png)
 
 ## 📋 Nomenclature
-[![BOM](https://img.shields.io)](bom.md)
+[![BOM](bom.md)
 
