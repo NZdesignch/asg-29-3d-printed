@@ -17,7 +17,7 @@
 ---
 
 ## 📦 Module : aile gauche
-Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/module_aile gauche.zip)**
+Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/module_aile_gauche.zip)**
 
 | Structure | État | Périmètres | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: |
