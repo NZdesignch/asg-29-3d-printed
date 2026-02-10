@@ -17,7 +17,7 @@ def generate_bom():
     else:
         data = {}
 
-    # Initialisation des paramètres partagés
+    # Paramètres partagés
     common_keys = [
         "top_solid_layers", "bottom_solid_layers", 
         "fill_density", "fill_pattern", 
@@ -28,20 +28,20 @@ def generate_bom():
         data["COMMON_SETTINGS"] = {k: None for k in common_keys}
     
     common = data["COMMON_SETTINGS"]
-    # Nouveau dictionnaire pour reconstruire un JSON propre
     new_print_settings = {"COMMON_SETTINGS": common}
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("# 🛠️ Bill of Materials (BOM)\n\n")
 
-        # --- TABLEAU DES PARAMÈTRES COMMUNS (Sans icônes) ---
+        # --- TABLEAU DES PARAMÈTRES COMMUNS (Texte pur) ---
         f.write("## ⚙️ Paramètres d'Impression Généraux\n\n")
         
         def check(val): return val if val is not None else "🔴 _À définir_"
 
         f.write("| Paramètre | Valeur |\n")
         f.write("| :--- | :--- |\n")
-        f.write(f"| Couches Solides (Top / Bot) | 🔝 {check(common['top_solid_layers'])} / ⬇️ {check(common['bottom_solid_layers'])} |\n")
+        # Suppression des icônes 🔝 et ⬇️ ici
+        f.write(f"| Couches Solides (Top / Bot) | {check(common['top_solid_layers'])} / {check(common['bottom_solid_layers'])} |\n")
         f.write(f"| Remplissage (Densité / Motif) | {check(common['fill_density'])} / {check(common['fill_pattern'])} |\n")
         f.write(f"| Ancre d'Infill (Valeur / Max) | {check(common['infill_anchor'])} / {check(common['infill_anchor_max'])} |\n\n")
         
@@ -72,7 +72,6 @@ def generate_bom():
                         status, per, view, dl = ["-"] * 4
                         
                         if item.suffix.lower() == ".stl":
-                            # On ne garde que les périmètres dans les données par pièce
                             old_val = data.get(rel_path, {}).get("perimeters", None)
                             new_print_settings[rel_path] = {"perimeters": old_val}
                             
@@ -89,7 +88,7 @@ def generate_bom():
                 
                 f.write("\n---\n\n")
 
-    # Sauvegarde du JSON (nettoyé des anciennes clés inutiles)
+    # Sauvegarde du JSON
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(new_print_settings, f, indent=4, ensure_ascii=False)
 
