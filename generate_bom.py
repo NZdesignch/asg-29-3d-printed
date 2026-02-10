@@ -33,17 +33,17 @@ def generate_bom():
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("# 🛠️ Bill of Materials (BOM)\n\n")
 
-        # --- TABLEAU DES PARAMÈTRES COMMUNS (Texte pur) ---
+        # --- TABLEAU DES PARAMÈTRES COMMUNS (Noms mis à jour) ---
         f.write("## ⚙️ Paramètres d'Impression Généraux\n\n")
         
         def check(val): return val if val is not None else "🔴 _À définir_"
 
         f.write("| Paramètre | Valeur |\n")
         f.write("| :--- | :--- |\n")
-        # Suppression des icônes 🔝 et ⬇️ ici
-        f.write(f"| Couches Solides (Top / Bot) | {check(common['top_solid_layers'])} / {check(common['bottom_solid_layers'])} |\n")
+        # Mise à jour des libellés : Dessus / Dessous et Ancre de remplissage
+        f.write(f"| Couches Solides (Dessus / Dessous) | {check(common['top_solid_layers'])} / {check(common['bottom_solid_layers'])} |\n")
         f.write(f"| Remplissage (Densité / Motif) | {check(common['fill_density'])} / {check(common['fill_pattern'])} |\n")
-        f.write(f"| Ancre d'Infill (Valeur / Max) | {check(common['infill_anchor'])} / {check(common['infill_anchor_max'])} |\n\n")
+        f.write(f"| Ancre de remplissage (Valeur / Max) | {check(common['infill_anchor'])} / {check(common['infill_anchor_max'])} |\n\n")
         
         f.write("---\n\n")
 
