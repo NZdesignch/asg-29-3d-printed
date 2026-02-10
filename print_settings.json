@@ -106,5 +106,13 @@
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
         "infill_anchor_max": "50"
+    },
+    "COMMON_SETTINGS": {
+        "top_solid_layers": null,
+        "bottom_solid_layers": null,
+        "fill_density": null,
+        "fill_pattern": null,
+        "infill_anchor": null,
+        "infill_anchor_max": null
     }
 }
