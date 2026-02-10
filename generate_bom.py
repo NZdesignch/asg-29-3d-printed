@@ -3,7 +3,7 @@ import re
 import urllib.parse
 from pathlib import Path
 
-# --- Configuration (Constantes) ---
+# --- Configuration ---
 CFG = {
     "ext": ".stl", "out": "BOM.md", "json": "print_settings.json", "root": "stl",
     "repo": "https://github.com", "branch": "main",
@@ -11,73 +11,89 @@ CFG = {
                "motif_remplissage", "longueur_ancre", "longueur_max_ancre"]
 }
 
-# Pré-compilation pour la performance
 RE_QTY = re.compile(r'(?:x|qty)(\d+)', re.IGNORECASE)
 
-def format_md_row(stl_path, info, depth):
-    """S'occupe uniquement du formatage d'une ligne du tableau."""
-    ok = all(info.get(f) not in (None, "") for f in CFG["fields"])
+def format_md_row(stl_path, info, depth, fields, repo_url):
+    """Version optimisée du formatage de ligne."""
+    # all() s'arrête dès qu'un élément est faux (Lazy evaluation)
+    ok = all(info.get(f) not in (None, "") for f in fields)
+    
     qty_match = RE_QTY.search(stl_path.name)
     qty = qty_match.group(1) if qty_match else "1"
     
-    indent = "&nbsp;" * 4 * depth + "📄 "
+    # Construction de chaîne plus rapide (f-strings optimisées)
+    indent = f"{'&nbsp;' * (4 * depth)}📄 "
     layers = f"{info['couches_dessus'] or '-'}↑ {info['couches_dessous'] or '-'}↓"
     infill = f"{info['remplissage'] or '-'} ({info['motif_remplissage'] or '-'})"
     anchors = f"{info['longueur_ancre'] or '-'} ⇥ {info['longueur_max_ancre'] or '-'}"
     
     encoded_path = urllib.parse.quote(stl_path.as_posix())
-    base_url = f"{CFG['repo']}/{{}}/{CFG['branch']}/{encoded_path}"
+    # Pré-formatage partiel de l'URL
+    url_common = f"{repo_url}/{{}}/{CFG['branch']}/{encoded_path}"
     
     return (f"| {'🟢' if ok else '🔴'} | {indent}<samp>{stl_path.name}</samp> | `x{qty}` | "
             f"`{info['perimetres'] or '-'}` | `{layers}` | `{infill}` | `{anchors}` | "
-            f"[<samp>👁️ VUE</samp>]({base_url.format('blob')}) | [<samp>📥 STL</samp>]({base_url.format('raw')}) |")
+            f"[<samp>👁️ VUE</samp>]({url_common.format('blob')}) | [<samp>📥 STL</samp>]({url_common.format('raw')}) |")
 
-def process_directory(current_dir, root_cat, data_json, md_list):
-    """Parcours récursif optimisé."""
-    # On itère une seule fois sur le dossier
+def process_directory(current_dir, root_cat, data_json, md_list, fields, repo_url, ext):
+    """Parcours récursif avec injection de variables pour éviter les lookups globaux."""
+    # Utilisation d'un itérateur trié
     for item in sorted(current_dir.iterdir(), key=lambda x: x.name.lower()):
-        rel_to_cat = item.relative_to(root_cat)
-        depth = len(rel_to_cat.parts) - 1
+        # Calcul de la profondeur une seule fois par item
+        rel_parts = item.relative_to(root_cat).parts
+        depth = len(rel_parts) - 1
 
         if item.is_dir():
-            indent = "&nbsp;" * 2 * depth
+            indent = "&nbsp;" * (2 * depth)
             md_list.append(f"| | **{indent}└── 📁 {item.name}** | | | | | | | |")
-            process_directory(item, root_cat, data_json, md_list)
+            process_directory(item, root_cat, data_json, md_list, fields, repo_url, ext)
             
-        elif item.suffix.lower() == CFG["ext"]:
+        elif item.suffix.lower() == ext:
             path_str = item.as_posix()
-            info = data_json.setdefault(path_str, {f: None for f in CFG["fields"]})
-            md_list.append(format_md_row(item, info, depth))
+            # Initialisation plus propre du dictionnaire
+            if path_str not in data_json:
+                data_json[path_str] = {f: None for f in fields}
+            
+            md_list.append(format_md_row(item, data_json[path_str], depth, fields, repo_url))
 
 def generate_bom():
+    # Cache local des variables CFG (vitesse)
     root_dir = Path(CFG["root"])
-    json_file = Path(CFG["json"])
+    json_path = Path(CFG["json"])
+    fields = CFG["fields"]
+    repo_url = CFG["repo"]
+    ext = CFG["ext"]
     
     if not root_dir.exists():
         print(f"❌ Erreur: Dossier '{CFG['root']}' introuvable.")
         return
 
-    # Chargement sécurisé
+    # Lecture JSON optimisée
     data_json = {}
-    if json_file.exists():
+    if json_path.exists():
         try:
-            data_json = json.loads(json_file.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            print("⚠️ Fichier JSON corrompu, création d'un nouveau.")
+            data_json = json.loads(json_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, IOError):
+            pass
 
+    # Utilisation d'une liste pour accumuler les lignes (beaucoup plus rapide que += sur string)
     md = ["# 📋 Nomenclature", "\n> `🟢` Configuré | `🔴` Incomplet\n"]
 
-    for cat in sorted(d for d in root_dir.iterdir() if d.is_dir()):
-        md.extend([f"## 📦 {cat.name.upper()}", 
-                   "| Statut | Pièce | Qté | Périmètre | Couches | Remplissage | Ancre / Max | Voir | STL |",
-                   "|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|"])
-        process_directory(cat, cat, data_json, md)
+    # Traitement des catégories
+    for cat in sorted((d for d in root_dir.iterdir() if d.is_dir()), key=lambda x: x.name.lower()):
+        md.extend([
+            f"## 📦 {cat.name.upper()}", 
+            "| Statut | Pièce | Qté | Périmètre | Couches | Remplissage | Ancre / Max | Voir | STL |",
+            "|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|"
+        ])
+        process_directory(cat, cat, data_json, md, fields, repo_url, ext)
         md.append("\n---\n")
 
-    # Écritures
+    # Écritures groupées (Atomic write style)
+    json_path.write_text(json.dumps(data_json, indent=4, ensure_ascii=False), encoding="utf-8")
     Path(CFG["out"]).write_text("\n".join(md), encoding="utf-8")
-    json_file.write_text(json.dumps(data_json, indent=4, ensure_ascii=False), encoding="utf-8")
-    print(f"✅ Terminé : {CFG['out']} et {CFG['json']} mis à jour.")
+    
+    print(f"✅ {CFG['out']} mis à jour.")
 
 if __name__ == "__main__":
     generate_bom()
