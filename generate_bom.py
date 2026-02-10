@@ -10,14 +10,14 @@ def generate_bom():
     settings_file = "print_settings.json"
     exclude = {'.git', '.github', '__pycache__', 'venv', '.vscode'}
 
-    # Chargement du JSON
+    # 1. Chargement/Initialisation du dictionnaire de paramètres
     if Path(settings_file).exists():
         with open(settings_file, "r", encoding="utf-8") as f:
             print_settings = json.load(f)
     else:
         print_settings = {}
 
-    # Valeurs par défaut
+    # Définition des valeurs par défaut (SANS support ni layer_height)
     default_settings = {
         "perimeters": "3",
         "top_solid_layers": "4",
@@ -25,18 +25,17 @@ def generate_bom():
         "fill_density": "15%",
         "fill_pattern": "Grid",
         "infill_anchor": "600%",
-        "infill_anchor_max": "50",
-        "supports": "Non"
+        "infill_anchor_max": "50"
     }
 
-    # Analyse Niveau 1
+    # 2. Analyse des dossiers (niveau 1, ex: MTL)
     level1_dirs = [d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude]
 
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("# 🛠️ Bill of Materials (BOM)\n\n")
 
         for l1 in level1_dirs:
-            # Analyse Niveau 2
+            # Niveau 2 (ex: Aile, Fuselage)
             level2_dirs = sorted([d for d in l1.iterdir() if d.is_dir()])
             
             for module in level2_dirs:
@@ -46,7 +45,7 @@ def generate_bom():
                 f.write(f"## 📦 Module : {module.name.replace('_', ' ')}\n")
                 f.write(f"Section : `{l1.name}`\n\n")
                 
-                # --- EN-TÊTES EN TEXTE CLAIR ---
+                # En-têtes textuels clairs
                 f.write("| Structure | Périmètres | Couches | Densité | Pattern | Ancre / Max | Vue 3D | Download |\n")
                 f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
 
@@ -62,12 +61,13 @@ def generate_bom():
                         per, tb, dens, pat, anc, view, dl = ["-"] * 7
                         
                         if item.suffix.lower() == ".stl":
+                            # Fusion intelligente pour ne garder que les clés voulues
                             current = print_settings.get(rel_path, {})
-                            settings = {**default_settings, **current}
+                            # On ne garde que les clés présentes dans default_settings
+                            settings = {k: current.get(k, v) for k, v in default_settings.items()}
                             print_settings[rel_path] = settings
                             
                             per = settings['perimeters']
-                            # Emojis conservés uniquement dans les données
                             tb = f"🔝{settings['top_solid_layers']} / ⬇️{settings['bottom_solid_layers']}"
                             dens = settings['fill_density']
                             pat = settings['fill_pattern']
@@ -82,7 +82,7 @@ def generate_bom():
                 
                 f.write("\n---\n\n")
 
-    # Sauvegarde JSON
+    # Sauvegarde du JSON "propre"
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(print_settings, f, indent=4, ensure_ascii=False)
 
