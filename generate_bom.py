@@ -8,7 +8,7 @@ CFG = {
 
 def generate_bom():
     data_json = json.load(open(CFG["json"], "r", encoding="utf-8")) if os.path.exists(CFG["json"]) else {}
-    md = [f"# ✈️ Nomenclature ASG 29\n\n> `🟢` Configuré | `🔴` Incomplet\n"]
+    md = [f"# Nomenclature \n\n> `🟢` Configuré | `🔴` Incomplet\n"]
     
     categories = sorted([d for d in os.listdir(CFG["root"]) if os.path.isdir(os.path.join(CFG["root"], d))])
 
