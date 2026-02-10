@@ -10,14 +10,14 @@ def generate_bom():
     settings_file = "print_settings.json"
     exclude = {'.git', '.github', '__pycache__', 'venv', '.vscode'}
 
-    # 1. Chargement/Initialisation du dictionnaire de paramètres
+    # Chargement du JSON
     if Path(settings_file).exists():
         with open(settings_file, "r", encoding="utf-8") as f:
             print_settings = json.load(f)
     else:
         print_settings = {}
 
-    # Définition des valeurs par défaut pour les nouveaux paramètres
+    # Valeurs par défaut
     default_settings = {
         "perimeters": "3",
         "top_solid_layers": "4",
@@ -29,13 +29,15 @@ def generate_bom():
         "supports": "Non"
     }
 
-    # 2. Analyse des dossiers (ignore niveau 1 comme 'MTL')
+    # Analyse du niveau 1 (ex: MTL)
     level1_dirs = [d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude]
 
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write("# 🛠️ BOM & Paramètres d'Impression Avancés\n\n")
+        f.write("# 🛠️ BOM & Paramètres d'Impression\n\n")
+        f.write("> **Légende :** 🧱 Périmètres | ↕️ Top / Bot | 🏁 Densité | 🧩 Pattern | ⚓ Anchor / Max | 👁️ Voir | 💾 DL\n\n")
 
         for l1 in level1_dirs:
+            # Niveau 2 (ex: Aile_Gauche)
             level2_dirs = sorted([d for d in l1.iterdir() if d.is_dir()])
             
             for module in level2_dirs:
@@ -45,8 +47,8 @@ def generate_bom():
                 f.write(f"## 📦 Module : {module.name.replace('_', ' ')}\n")
                 f.write(f"Section : `{l1.name}`\n\n")
                 
-                # --- NOUVELLES COLONNES DANS LE TABLEAU ---
-                f.write("| Structure | Périm. | Top/Bot | Density | Pattern | Anchor | 3D | DL |\n")
+                # Entêtes avec Emojis
+                f.write("| Structure | 🧱 | ↕️ | 🏁 | 🧩 | ⚓ | 👁️ | 💾 |\n")
                 f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
 
                 for item in sorted(list(module.rglob("*"))):
@@ -54,24 +56,24 @@ def generate_bom():
                         rel_path = str(item.relative_to(root_dir))
                         depth = len(item.relative_to(module).parts)
                         
-                        indent = "&nbsp;" * 6 * depth + "└── " if depth > 0 else ""
+                        # Hiérarchie avec des slashs (/) au lieu de connecteurs type Windows
+                        indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
                         icon = "📂" if item.is_dir() else "📄"
                         
-                        # Initialisation des colonnes (vide pour les dossiers)
                         per, tb, dens, pat, anc, view, dl = ["-"] * 7
                         
                         if item.suffix.lower() == ".stl":
-                            # Fusion des réglages existants avec les nouveaux défauts (pour ne rien perdre)
                             current = print_settings.get(rel_path, {})
                             settings = {**default_settings, **current}
                             print_settings[rel_path] = settings
                             
-                            # Préparation des données pour le tableau
                             per = settings['perimeters']
-                            tb = f"{settings['top_solid_layers']}/{settings['bottom_solid_layers']}"
+                            # Utilisation du slash pour séparer les couches
+                            tb = f"{settings['top_solid_layers']} / {settings['bottom_solid_layers']}"
                             dens = settings['fill_density']
                             pat = settings['fill_pattern']
-                            anc = f"{settings['infill_anchor']} (max {settings['infill_anchor_max']})"
+                            # Utilisation du slash pour l'ancre d'infill
+                            anc = f"{settings['infill_anchor']} / {settings['infill_anchor_max']}"
                             
                             url_path = urllib.parse.quote(rel_path)
                             view = f"[👁️]({url_path})"
@@ -82,7 +84,7 @@ def generate_bom():
                 
                 f.write("\n---\n\n")
 
-    # Sauvegarde du JSON formaté
+    # Sauvegarde finale
     with open(settings_file, "w", encoding="utf-8") as f:
         json.dump(print_settings, f, indent=4, ensure_ascii=False)
 
