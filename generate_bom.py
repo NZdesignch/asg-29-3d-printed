@@ -32,7 +32,7 @@ def generate_bom():
         md.append("| Statut | Pièce | Qté | Périmètre | Couches | Remplissage | Ancre / Max | Voir | STL |")
         md.append("|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
         
-        for root, _, files in os.walk(cat):
+         for root, _, files in os.walk(cat):
             curr_path = Path(root)
             stls = sorted([f for f in files if f.lower().endswith(CFG["ext"])])
             if not stls: continue
@@ -40,9 +40,10 @@ def generate_bom():
             rel_to_cat = curr_path.relative_to(cat)
             depth = len(rel_to_cat.parts) if rel_to_cat != Path(".") else 0
             
-            # MODIFICATION : Affiche le dossier UNIQUEMENT si profondeur > 1
-            if depth > 1:
-                indent = "&nbsp;&nbsp;" * (depth - 2)
+            # Affiche tous les dossiers dès le premier niveau
+            if rel_to_cat != Path("."):
+                # On retire 1 pour que le niveau 1 n'ait pas d'indentation
+                indent = "&nbsp;&nbsp;" * (depth - 1)
                 md.append(f"| | **{indent}└── 📁 {curr_path.name}** | | | | | | | |")
 
             for stl in stls:
@@ -52,9 +53,8 @@ def generate_bom():
                 ok = all(info.get(f) not in (None, "") for f in CFG["fields"])
                 qty = next(iter(re.findall(r'(?:x|qty)(\d+)', stl, re.I)), "1")
                 
-                # Ajustement de l'indentation des fichiers pour correspondre au masquage
-                file_indent_level = max(0, depth - 1)
-                indent_file = "&nbsp;&nbsp;&nbsp;&nbsp;" * file_indent_level + "📄 "
+                # Aligne l'icône du fichier selon la profondeur du dossier
+                indent_file = "&nbsp;&nbsp;&nbsp;&nbsp;" * depth + "📄 "
                 
                 layers = f"{info['couches_dessus'] or '-'}↑ {info['couches_dessous'] or '-'}↓"
                 infill = f"{info['remplissage'] or '-'} ({info['motif_remplissage'] or '-'})"
