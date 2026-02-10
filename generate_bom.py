@@ -6,7 +6,7 @@ from pathlib import Path
 import urllib.parse
 
 def get_github_repo_info():
-    """Récupère dynamiquement l'URL 'raw' de GitHub."""
+    """Récupère l'URL raw de GitHub."""
     try:
         remote_url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"]).decode().strip()
         repo_path = remote_url.replace("https://github.com", "").replace(".git", "").replace("git@github.com:", "")
@@ -24,25 +24,30 @@ def generate_bom():
     archive_dir.mkdir(exist_ok=True)
     base_raw_url = get_github_repo_info()
 
-    # --- CHARGEMENT SÉCURISÉ DU JSON ---
-    data = {}
+    # --- 1. CHARGEMENT ET PROTECTION DES DONNÉES ---
+    existing_data = {}
     if Path(settings_file).exists():
         try:
             with open(settings_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except json.JSONDecodeError:
-            print(f"⚠️ Erreur de syntaxe dans {settings_file}. Réinitialisation...")
-            data = {}
+                content = f.read().strip()
+                if content:
+                    existing_data = json.loads(content)
+        except json.JSONDecodeError as e:
+            # SÉCURITÉ : Si le JSON est corrompu, on arrête tout pour ne rien écraser
+            print(f"❌ ERREUR SYNTAXE JSON (Ligne {e.lineno}) : Le script s'arrête pour protéger vos données.")
+            return 
 
-    # Initialisation des paramètres partagés
+    # --- 2. FUSION DES PARAMÈTRES COMMUNS ---
     common_keys = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_pattern", "infill_anchor", "infill_anchor_max"]
-    if "COMMON_SETTINGS" not in data or not isinstance(data["COMMON_SETTINGS"], dict):
-        data["COMMON_SETTINGS"] = {k: None for k in common_keys}
+    old_common = existing_data.get("COMMON_SETTINGS", {})
     
-    common = data["COMMON_SETTINGS"]
-    new_print_settings = {"COMMON_SETTINGS": common}
+    # On garde la valeur existante, sinon on met None
+    new_data = {
+        "COMMON_SETTINGS": {k: old_common.get(k) for k in common_keys}
+    }
+    common = new_data["COMMON_SETTINGS"]
 
-    # Analyse des répertoires
+    # --- 3. ANALYSE ET GÉNÉRATION ---
     level1_dirs = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
     modules_list = []
     for l1 in level1_dirs:
@@ -54,41 +59,32 @@ def generate_bom():
     with open(output_file, "w", encoding="utf-8") as f:
         f.write("# 🛠️ Nomenclature (BOM)\n\n")
 
-        # --- SOMMAIRE ---
+        # Sommaire
         f.write("## 📌 Sommaire\n")
         for mod_path, _ in modules_list:
             anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
             f.write(f"- [Module : {mod_path.name.replace('_', ' ')}](#-module--{anchor})\n")
         f.write("\n---\n\n")
 
-        # --- TABLEAU DES PARAMÈTRES COMMUNS ---
+        # Paramètres Communs
         f.write("## ⚙️ Paramètres d'Impression Généraux\n\n")
         def check(val): return val if val is not None else "🔴 _À définir_"
-
-        f.write("| Paramètre | Valeur |\n")
-        f.write("| :--- | :--- |\n")
-        f.write(f"| Couches Solides (Dessus / Dessous) | {check(common.get('top_solid_layers'))} / {check(common.get('bottom_solid_layers'))} |\n")
-        f.write(f"| Remplissage (Densité / Motif) | {check(common.get('fill_density'))} / {check(common.get('fill_pattern'))} |\n")
-        f.write(f"| Ancre de remplissage (Valeur / Max) | {check(common.get('infill_anchor'))} / {check(common.get('infill_anchor_max'))} |\n\n")
-        
+        f.write("| Paramètre | Valeur |\n| :--- | :--- |\n")
+        f.write(f"| Couches Solides (Dessus / Dessous) | {check(common['top_solid_layers'])} / {check(common['bottom_solid_layers'])} |\n")
+        f.write(f"| Remplissage (Densité / Motif) | {check(common['fill_density'])} / {check(common['fill_pattern'])} |\n")
+        f.write(f"| Ancre de remplissage (Valeur / Max) | {check(common['infill_anchor'])} / {check(common['infill_anchor_max'])} |\n\n")
         f.write("---\n\n")
 
-        # --- GÉNÉRATION DES TABLEAUX PAR MODULE ---
         for module_path, parent_name in modules_list:
-            # Nettoyage du nom pour le ZIP (espaces -> underscores)
+            # Gestion ZIP
             safe_name = module_path.name.replace(" ", "_")
             zip_filename = f"module_{safe_name}"
             shutil.make_archive(str(archive_dir / zip_filename), 'zip', root_dir=module_path)
-            
-            # Encodage URL du ZIP
-            url_zip_name = urllib.parse.quote(f"{zip_filename}.zip")
-            zip_url = f"{base_raw_url}/archives/{url_zip_name}"
+            zip_url = f"{base_raw_url}/archives/{urllib.parse.quote(zip_filename + '.zip')}"
 
             f.write(f"## 📦 Module : {module_path.name.replace('_', ' ')}\n")
             f.write(f"Section : `{parent_name}` | **[🗜️ Télécharger ZIP]({zip_url})**\n\n")
-            
-            f.write("| Structure | État | Périmètres | Vue 3D | Download |\n")
-            f.write("| :--- | :---: | :---: | :---: | :---: |\n")
+            f.write("| Structure | État | Périmètres | Vue 3D | Download |\n| :--- | :---: | :---: | :---: | :---: |\n")
 
             for item in sorted(list(module_path.rglob("*"))):
                 if item.is_dir() or item.suffix.lower() == ".stl":
@@ -96,29 +92,26 @@ def generate_bom():
                     depth = len(item.relative_to(module_path).parts)
                     indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
                     
-                    status, per, view, dl = ["-"] * 4
-                    
                     if item.suffix.lower() == ".stl":
-                        # Récupération sécurisée du périmètre
-                        old_val = data.get(rel_path, {}).get("perimeters") if isinstance(data.get(rel_path), dict) else None
-                        new_print_settings[rel_path] = {"perimeters": old_val}
+                        # --- FUSION DES PÉRIMÈTRES (PROTECTION) ---
+                        # On récupère la valeur actuelle. Si elle n'est pas None, elle est conservée.
+                        old_perim = existing_data.get(rel_path, {}).get("perimeters")
+                        new_data[rel_path] = {"perimeters": old_perim}
                         
-                        status = "🟢" if old_val is not None else "🔴"
-                        per = old_val if old_val is not None else "---"
-                        
+                        status = "🟢" if old_perim is not None else "🔴"
+                        per = old_perim if old_perim is not None else "---"
                         url_path = urllib.parse.quote(rel_path)
                         view = f"[👁️]({url_path})"
                         dl = f"[💾]({base_raw_url}/{url_path})"
 
-                    icon = "📂" if item.is_dir() else "📄"
-                    name = f"**{item.name}**" if item.is_dir() else item.name
-                    f.write(f"| {indent}{icon} {name} | {status} | {per} | {view} | {dl} |\n")
-                
+                        f.write(f"| {indent}📄 {item.name} | {status} | {per} | {view} | {dl} |\n")
+                    else:
+                        f.write(f"| {indent}📂 **{item.name}** | - | - | - | - |\n")
             f.write("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---\n\n")
 
-    # Sauvegarde finale
+    # --- 4. SAUVEGARDE FINALE SÉCURISÉE ---
     with open(settings_file, "w", encoding="utf-8") as f:
-        json.dump(new_print_settings, f, indent=4, ensure_ascii=False)
+        json.dump(new_data, f, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     generate_bom()
