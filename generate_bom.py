@@ -64,7 +64,7 @@ def generate_bom():
                 sections.append((m, l1.name))
 
     # 3. Construction du contenu Markdown (En-tête et Sommaire)
-    md = ["# 🛠️ Nomenclature (BOM)\n", "## 📌 Sommaire"]
+    md = ["# 📋 Nomenclature (BOM)\n", "## 📌 Sommaire"]
     
     for mod_path, _ in sections:
         clean_name = mod_path.name.replace('_', ' ').capitalize()
