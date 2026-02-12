@@ -6,6 +6,8 @@ from pathlib import Path
 from contextlib import suppress
 
 # --- CONFIGURATION ---
+OUTPUT_FILE = "bom.md"
+SETTINGS_FILE = "print_settings.json"
 EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives'}
 COMMON_KEYS = [
     "top_solid_layers", "bottom_solid_layers", 
@@ -28,7 +30,7 @@ def generate_bom():
     archive_dir = root / "archives"
     archive_dir.mkdir(exist_ok=True)
     
-    settings_path = root / "print_settings.json"
+    settings_path = root / SETTINGS_FILE
     raw_url = get_raw_url()
     
     # 1. Chargement des données
@@ -92,7 +94,6 @@ def generate_bom():
                 
             rel = str(item.relative_to(root))
             depth = len(item.relative_to(mod).parts)
-            # On recrée l'indentation exacte qui fonctionnait
             indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
             
             if item.suffix.lower() == ".stl":
@@ -107,8 +108,8 @@ def generate_bom():
         
         md.append(f"\n[⬆️ Retour au sommaire](#-sommaire)\n\n---")
 
-    # 5. Sauvegarde
-    Path(output_file).write_text("\n".join(md), encoding="utf-8")
+    # 5. Sauvegarde (Utilisation des constantes pour éviter l'erreur NameError)
+    Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     settings_path.write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
 
 if __name__ == "__main__":
