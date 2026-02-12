@@ -17,7 +17,7 @@
 ---
 
 ## 📦 01 fuselage
-Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/module_01_fuselage.zip)**
+Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/01_fuselage.zip)**
 
 | Structure | État | Périmètres | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: |
@@ -29,7 +29,7 @@ Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.co
 ---
 
 ## 📦 02 aile gauche
-Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/module_02_aile_gauche.zip)**
+Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/02_aile_gauche.zip)**
 
 | Structure | État | Périmètres | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: |
