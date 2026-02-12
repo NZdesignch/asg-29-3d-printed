@@ -3,7 +3,6 @@ import shutil
 import subprocess
 import urllib.parse
 from pathlib import Path
-from contextlib import suppress
 
 # --- CONFIGURATION ---
 OUTPUT_FILE = "bom.md"
@@ -16,15 +15,19 @@ COMMON_KEYS = [
 ]
 
 def get_raw_url():
-    """Récupère l'URL de base GitHub Raw pour les liens de téléchargement."""
+    """Récupère l'URL raw du dépôt GitHub de manière sécurisée."""
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
-        # Nettoyage pour obtenir le chemin utilisateur/depot
-        path = url.split("github.com")[-1].replace(".git", "").replace("git@github.com:", "/")
-        if not path.startswith("/"): path = "/" + path
-        return f"https://raw.githubusercontent.com{path}/main"
+        repo = url.replace("https://github.com/", "").replace("git@github.com:", "").replace(".git", "")
+        return f"https://raw.githubusercontent.com/{repo}/main"
     except Exception:
         return "."
+
+def check(v):
+    """Vérifie si une valeur est définie pour l'affichage Markdown."""
+    if v is not None and str(v).strip() != "":
+        return f"**{v}**"
+    return "🔴 _À définir_"
 
 def generate_bom():
     root = Path(".")
@@ -34,16 +37,21 @@ def generate_bom():
     settings_path = root / SETTINGS_FILE
     raw_url = get_raw_url()
     
-    # 1. Chargement sécurisé des réglages
+    # 1. Chargement des données existantes
     existing_data = {}
     if settings_path.exists():
-        with suppress(json.JSONDecodeError):
+        try:
             existing_data = json.loads(settings_path.read_text(encoding="utf-8"))
+        except Exception:
+            print(f"⚠️ Attention : Erreur de lecture {SETTINGS_FILE}.")
 
-    # Initialisation des paramètres communs
-    new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
-    
-    # 2. Analyse de l'arborescence (Modules de niveau 2)
+    # Initialisation du nouveau dictionnaire
+    new_data = {"COMMON_SETTINGS": {}}
+    old_common = existing_data.get("COMMON_SETTINGS", {})
+    for k in COMMON_KEYS:
+        new_data["COMMON_SETTINGS"][k] = old_common.get(k)
+
+    # 2. Analyse de l'arborescence
     sections = []
     level1_dirs = sorted([d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE])
     for l1 in level1_dirs:
@@ -51,7 +59,7 @@ def generate_bom():
             if any(m.rglob("*.stl")):
                 sections.append((m, l1.name))
 
-    # 3. Préparation du contenu Markdown
+    # 3. Construction du contenu Markdown
     md = ["# 🛠️ Nomenclature (BOM)\n", "## 📌 Sommaire"]
     
     for mod_path, _ in sections:
@@ -61,4 +69,13 @@ def generate_bom():
     
     # Paramètres d'impression généraux
     c = new_data["COMMON_SETTINGS"]
-    def check(v): return f"**{v}**" if v and str(v).strip() else "🔴 _
+    md.extend([
+        "\n---\n", "## ⚙️ Paramètres d'Impression Généraux\n",
+        "| Paramètre | Valeur |", "| :--- | :--- |",
+        f"| Couches Solides | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
+        f"| Remplissage | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |",
+        f"| Ancre de remplissage | {check(c.get('infill_anchor'))} / {check(c.get('infill_anchor_max'))} |\n",
+        "---"
+    ])
+
+    # 4. Génération des tableaux détaillés
