@@ -16,12 +16,8 @@
 
 ---
 
-<h2 id="-aile-gauche">📦 Aile gauche</h2>
-
+## 📦 Aile gauche
 Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/module_aile_gauche.zip)**
-
-<details>
-<summary><b>Afficher les 10 pièces du module</b></summary>
 
 | Structure | État | Périmètres | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: |
@@ -43,24 +39,18 @@ Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.co
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 01.stl | 🔴 | --- | [👁️](stl/aile%20gauche/volet/nervures/Nervure%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile%20gauche/volet/nervures/Nervure%2001.stl) |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **sections** | - | - | - | - |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Section 01.stl | 🔴 | --- | [👁️](stl/aile%20gauche/volet/sections/Section%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/aile%20gauche/volet/sections/Section%2001.stl) |
-</details>
 
 [⬆️ Retour au sommaire](#-sommaire)
 
 ---
 
-<h2 id="-fuselage">📦 Fuselage</h2>
-
+## 📦 Fuselage
 Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/module_fuselage.zip)**
-
-<details>
-<summary><b>Afficher les 2 pièces du module</b></summary>
 
 | Structure | État | Périmètres | Vue 3D | Download |
 | :--- | :---: | :---: | :---: | :---: |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 01.stl | 🔴 | --- | [👁️](stl/fuselage/Nervure%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/fuselage/Nervure%2001.stl) |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 02.stl | 🔴 | --- | [👁️](stl/fuselage/Nervure%2002.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/fuselage/Nervure%2002.stl) |
-</details>
 
 [⬆️ Retour au sommaire](#-sommaire)
 
