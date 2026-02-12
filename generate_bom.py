@@ -41,7 +41,7 @@ def generate_bom():
 
     new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
     
-    # 2. Analyse des modules (Niveau 1 / Niveau 2)
+    # 2. Analyse des modules
     sections = []
     level1_dirs = sorted([d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE])
     for l1 in level1_dirs:
@@ -70,24 +70,25 @@ def generate_bom():
         "---"
     ])
 
-    # 4. Génération des tableaux par module
+    # 4. Génération des sections dépliables
     for mod, parent in sections:
-        # Création ZIP
         zip_name = f"module_{mod.name.replace(' ', '_')}"
         shutil.make_archive(str(archive_dir / zip_name), 'zip', root_dir=mod)
         
-        # Titre et Entête
         clean_title = mod.name.replace('_', ' ').capitalize()
         zip_url = f"{raw_url}/archives/{urllib.parse.quote(zip_name)}.zip"
-        
-        md.extend([
-            f"\n## 📦 {clean_title}",
-            f"Section : `{parent}` | **[🗜️ Télécharger ZIP]({zip_url})**\n",
-            "| Structure | État | Périmètres | Vue 3D | Download |",
-            "| :--- | :---: | :---: | :---: | :---: |"
-        ])
+        anchor_id = mod.name.lower().replace(" ", "-").replace("_", "-")
 
-        # Parcours des fichiers du module
+        # Début de la section dépliable HTML
+        md.append(f'\n<h2 id="-{anchor_id}">📦 {clean_title}</h2>\n')
+        md.append(f"Section : `{parent}` | **[🗜️ Télécharger ZIP]({zip_url})**\n")
+        md.append("<details>")
+        md.append(f"<summary><b>Afficher les {len(list(mod.rglob('*.stl')))} pièces du module</b></summary>\n")
+        
+        # Tableau à l'intérieur du <details>
+        md.append("| Structure | État | Périmètres | Vue 3D | Download |")
+        md.append("| :--- | :---: | :---: | :---: | :---: |")
+
         for item in sorted(mod.rglob("*")):
             if not (item.is_dir() or item.suffix.lower() == ".stl"):
                 continue
@@ -106,9 +107,10 @@ def generate_bom():
             else:
                 md.append(f"| {indent}📂 **{item.name}** | - | - | - | - |")
         
+        md.append("</details>") # Fermeture du dépliable
         md.append(f"\n[⬆️ Retour au sommaire](#-sommaire)\n\n---")
 
-    # 5. Sauvegarde (Utilisation des constantes pour éviter l'erreur NameError)
+    # 5. Sauvegarde
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     settings_path.write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
 
