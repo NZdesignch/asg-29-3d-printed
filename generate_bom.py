@@ -15,7 +15,7 @@ COMMON_KEYS = [
 ]
 
 def get_raw_url():
-    """Récupère l'URL raw du dépôt GitHub de manière sécurisée."""
+    """Récupère l'URL raw du dépôt GitHub."""
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
         repo = url.replace("https://github.com/", "").replace("git@github.com:", "").replace(".git", "")
@@ -43,7 +43,7 @@ def generate_bom():
         try:
             existing_data = json.loads(settings_path.read_text(encoding="utf-8"))
         except Exception:
-            print(f"⚠️ Attention : Erreur de lecture {SETTINGS_FILE}.")
+            print(f"⚠️ Erreur de lecture {SETTINGS_FILE}.")
 
     # Initialisation du nouveau dictionnaire
     new_data = {"COMMON_SETTINGS": {}}
@@ -79,3 +79,49 @@ def generate_bom():
     ])
 
     # 4. Génération des tableaux détaillés
+    for mod, parent in sections:
+        safe_zip_name = mod.name.replace(" ", "_")
+        zip_filename = f"module_{safe_zip_name}"
+        shutil.make_archive(str(archive_dir / zip_filename), 'zip', root_dir=mod)
+        
+        clean_title = mod.name.replace('_', ' ').capitalize()
+        encoded_zip = urllib.parse.quote(zip_filename)
+        zip_url = f"{raw_url}/archives/{encoded_zip}.zip"
+        
+        md.extend([
+            f"\n## 📦 {clean_title}",
+            f"Section : `{parent}` | **[🗜️ Télécharger ZIP]({zip_url})**\n",
+            "| Structure | État | Périmètres | Vue 3D | Download |",
+            "| :--- | :---: | :---: | :---: | :---: |"
+        ])
+
+        for item in sorted(mod.rglob("*")):
+            if not (item.is_dir() or item.suffix.lower() == ".stl"):
+                continue
+                
+            rel_path = str(item.relative_to(root))
+            depth = len(item.relative_to(mod).parts)
+            indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
+            
+            if item.suffix.lower() == ".stl":
+                old_val = existing_data.get(rel_path, {}).get("perimeters")
+                new_data[rel_path] = {"perimeters": old_val}
+                
+                status = "🟢" if old_val is not None else "🔴"
+                display_perim = old_val if old_val is not None else "---"
+                u_path = urllib.parse.quote(rel_path)
+                
+                md.append(f"| {indent}📄 {item.name} | {status} | {display_perim} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
+            else:
+                md.append(f"| {indent}📂 **{item.name}** | - | - | - | - |")
+        
+        # Ajout du retour à la ligne supplémentaire après le tableau
+        md.append("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---")
+
+    # 5. Sauvegarde
+    Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
+    Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
+    print("✅ BOM généré avec succès.")
+
+if __name__ == "__main__":
+    generate_bom()
