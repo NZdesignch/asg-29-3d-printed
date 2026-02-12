@@ -18,8 +18,6 @@ Réalisation d'un modèle réduit du planeur [ASG 29](https://www.alexander-schl
 | | Centrage (CG) | `--- mm` |
 | **Eléctronique** | Alimentation | `LiPo` `5S` `--- mAh` |
 | | Fonctions RC | `Aileron` `Volet` `Profondeur` `Direction` `Train rentrant` `Turbine escamotable`|
-| | Servos | `6x` `KST X10 mini` `2x` `KST CM653`|
-| **Motorisation** | Moteur | `---` `KV` |
 
 # 🛠️ Composants
 
