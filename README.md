@@ -16,8 +16,6 @@ Réalisation d'un modèle réduit du planeur [ASG 29](https://www.alexander-schl
 | **Masse & Charge**| Masse en vol | `4500 g` |
 | | Charge alaire | `--- g/dm²` |
 | | Centrage (CG) | `--- mm` |
-| **Eléctronique** | Alimentation | `LiPo` `5S` `--- mAh` |
-| | Fonctions RC | `Aileron` `Volet` `Profondeur` `Direction` `Train rentrant` `Turbine escamotable`|
 
 # 🛠️ Composants
 
@@ -29,3 +27,7 @@ La [Nomenclature](bom.md) présente chaque pièce à imprimer au format `STL` av
 
 ## Eléctronique
 
+| Catégorie | Caractéristique | Valeur |
+| :--- | :--- | :--- |
+| **Eléctronique** | Alimentation | `LiPo` `5S` `--- mAh` |
+| | Fonctions RC | `Aileron` `Volet` `Profondeur` `Direction` `Train rentrant` `Turbine escamotable`|
