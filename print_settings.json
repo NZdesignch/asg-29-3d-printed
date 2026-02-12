@@ -7,6 +7,36 @@
         "infill_anchor": "2 mm",
         "infill_anchor_max": "2 mm"
     },
+    "stl/aile gauche/aileron/nervures/Nervure 01.stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/aileron/sections/Section 01.stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/nervures/Nervure 01 - Copie (2).stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/nervures/Nervure 01 - Copie.stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/nervures/Nervure 01.stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/sections/Section 01 - Copie (2).stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/sections/Section 01 - Copie.stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/sections/Section 01.stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/volet/nervures/Nervure 01.stl": {
+        "perimeters": null
+    },
+    "stl/aile gauche/volet/sections/Section 01.stl": {
+        "perimeters": null
+    },
     "stl/fuselage/Nervure 01.stl": {
         "perimeters": null
     },
