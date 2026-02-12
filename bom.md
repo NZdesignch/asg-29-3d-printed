@@ -1,4 +1,4 @@
-# 🛠️ Nomenclature (BOM)
+# 📋 Nomenclature (BOM)
 
 ## 📌 Sommaire
 - [01 fuselage](#-01-fuselage)
