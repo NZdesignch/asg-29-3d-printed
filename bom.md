@@ -1,8 +1,8 @@
 # 🛠️ Nomenclature (BOM)
 
 ## 📌 Sommaire
-- [Module : aile gauche](#-module--aile-gauche)
-- [Module : fuselage](#-module--fuselage)
+- [Aile gauche](#-aile-gauche)
+- [Fuselage](#-fuselage)
 
 ---
 
@@ -10,13 +10,13 @@
 
 | Paramètre | Valeur |
 | :--- | :--- |
-| Couches Solides (Dessus / Dessous) | **3** / **3** |
-| Remplissage (Densité / Motif) | **4 %** / **Grille** |
-| Ancre de remplissage (Valeur / Max) | **2 mm** / **2 mm** |
+| Couches Solides | **3** / **3** |
+| Remplissage | **4 %** / **Grille** |
+| Ancre de remplissage | **2 mm** / **2 mm** |
 
 ---
 
-## 📦 Module : aile gauche
+## 📦 Aile gauche
 Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/module_aile_gauche.zip)**
 
 | Structure | État | Périmètres | Vue 3D | Download |
@@ -44,7 +44,7 @@ Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.co
 
 ---
 
-## 📦 Module : fuselage
+## 📦 Fuselage
 Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/archives/module_fuselage.zip)**
 
 | Structure | État | Périmètres | Vue 3D | Download |
