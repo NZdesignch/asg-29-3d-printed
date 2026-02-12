@@ -22,7 +22,7 @@ Réalisation d'un modèle réduit du planeur [ASG 29](https://www.alexander-schl
 | | Servos | `6x` `KST X10 mini` `2x` `KST CM653`|
 | **Motorisation** | Moteur | `---` `KV` |
 
-## 📋 Nomenclature
+## 🛠️ Nomenclature (BOM)
 
 La [Nomenclature](bom.md) présente chaque pièce à imprimer au format `STL` avec les paramètres d'impression importantsà respecter.
 
