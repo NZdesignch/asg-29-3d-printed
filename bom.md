@@ -47,10 +47,10 @@ Section : `stl` | **[🗜️ Télécharger ZIP](https://raw.githubusercontent.co
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **02 nervures** | - | - | - | - |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 nervure 01.stl | 🔴 | --- | [👁️](stl/02%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/02%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl) |
 | &nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **04 aileron** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **nervures** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 01.stl | 🔴 | --- | [👁️](stl/02%20aile%20gauche/04%20aileron/nervures/Nervure%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/02%20aile%20gauche/04%20aileron/nervures/Nervure%2001.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **sections** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Section 01.stl | 🔴 | --- | [👁️](stl/02%20aile%20gauche/04%20aileron/sections/Section%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/02%20aile%20gauche/04%20aileron/sections/Section%2001.stl) |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **01 sections** | - | - | - | - |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 section 01.stl | 🔴 | --- | [👁️](stl/02%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/02%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl) |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📂 **02 nervures** | - | - | - | - |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 📄 nervure 01.stl | 🔴 | --- | [👁️](stl/02%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/02%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl) |
 
 [⬆️ Retour au sommaire](#-sommaire)
 
