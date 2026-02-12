@@ -7,40 +7,40 @@
         "infill_anchor": "2 mm",
         "infill_anchor_max": "2 mm"
     },
-    "stl/aile gauche/aileron/nervures/Nervure 01.stl": {
+    "stl/01 fuselage/Nervure 01.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/aileron/sections/Section 01.stl": {
+    "stl/01 fuselage/Nervure 02.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/nervures/Nervure 01 - Copie (2).stl": {
+    "stl/02 aile gauche/01 sections/Section 01.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/nervures/Nervure 01 - Copie.stl": {
+    "stl/02 aile gauche/01 sections/section 02.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/nervures/Nervure 01.stl": {
+    "stl/02 aile gauche/01 sections/section 03.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/sections/Section 01 - Copie (2).stl": {
+    "stl/02 aile gauche/02 nervures/nervure 01.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/sections/Section 01 - Copie.stl": {
+    "stl/02 aile gauche/02 nervures/nervure 02.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/sections/Section 01.stl": {
+    "stl/02 aile gauche/02 nervures/nervure 03.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/volet/nervures/Nervure 01.stl": {
+    "stl/02 aile gauche/03 volet/01 sections/section 01.stl": {
         "perimeters": null
     },
-    "stl/aile gauche/volet/sections/Section 01.stl": {
+    "stl/02 aile gauche/03 volet/02 nervures/nervure 01.stl": {
         "perimeters": null
     },
-    "stl/fuselage/Nervure 01.stl": {
+    "stl/02 aile gauche/04 aileron/nervures/Nervure 01.stl": {
         "perimeters": null
     },
-    "stl/fuselage/Nervure 02.stl": {
+    "stl/02 aile gauche/04 aileron/sections/Section 01.stl": {
         "perimeters": null
     }
 }
