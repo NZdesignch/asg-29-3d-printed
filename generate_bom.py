@@ -1,110 +1,108 @@
 import json
 import shutil
 import subprocess
-import urllib.parse
 from pathlib import Path
-from contextlib import suppress
+import urllib.parse
 
-# --- CONSTANTES ---
-EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives'}
-COMMON_KEYS = [
-    "top_solid_layers", "bottom_solid_layers", 
-    "fill_density", "fill_pattern", 
-    "infill_anchor", "infill_anchor_max"
-]
-
-def get_raw_url():
-    """Récupère l'URL de base GitHub Raw avec une gestion d'erreur simplifiée."""
+def get_github_repo_info():
+    """Récupère l'URL raw du dépôt GitHub."""
     try:
-        url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
-        path = url.split("github.com")[-1].replace(".git", "").replace(":", "/")
-        return f"https://raw.githubusercontent.com{path}/main"
+        cmd = ["git", "config", "--get", "remote.origin.url"]
+        remote_url = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode().strip()
+        repo_path = remote_url.replace("https://github.com", "").replace(".git", "").replace("git@github.com:", "")
+        return f"https://raw.githubusercontent.com{repo_path}/main"
     except Exception:
         return "."
 
-def format_name(name):
-    """Formate les noms de fichiers/dossiers pour le Markdown."""
-    return name.replace('_', ' ').strip().capitalize()
-
-def check_val(val):
-    """Retourne la valeur formatée ou une alerte si vide."""
-    return f"**{val}**" if val and str(val).strip() else "🔴 _À définir_"
-
 def generate_bom():
-    root = Path(".")
-    archive_dir = root / "archives"
+    # --- CONFIGURATION ---
+    root_dir = Path(".")
+    output_file = "bom.md"
+    settings_file = "print_settings.json"
+    archive_dir = Path("archives")
+    exclude = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives'}
+    
     archive_dir.mkdir(exist_ok=True)
-    
-    settings_path = root / "print_settings.json"
-    raw_url = get_raw_url()
-    
-    # 1. Chargement sécurisé des réglages existants
+    base_raw_url = get_github_repo_info()
+
+    # --- 1. LECTURE DU JSON ---
     existing_data = {}
-    if settings_path.exists():
-        with suppress(json.JSONDecodeError):
-            existing_data = json.loads(settings_path.read_text(encoding="utf-8"))
+    if Path(settings_file).exists():
+        try:
+            with open(settings_file, "r", encoding="utf-8") as f:
+                existing_data = json.load(f)
+        except Exception as e:
+            print(f"❌ Erreur lecture JSON: {e}")
+            return 
 
-    # 2. Préparation du nouveau dictionnaire de données
-    new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
-    
-    # 3. Analyse de la structure (un seul passage)
-    sections = {}
-    for l1 in sorted(root.iterdir()):
-        if l1.is_dir() and l1.name not in EXCLUDE:
-            for m in sorted(l1.iterdir()):
-                if m.is_dir() and any(m.glob("*.stl")):
-                    sections.setdefault(l1.name, []).append(m)
-
-    # 4. Construction du contenu Markdown
-    md = ["# 🛠️ Nomenclature (BOM)\n", "## 📌 Sommaire"]
-    
-    # Sommaire
-    for modules in sections.values():
-        for mod in modules:
-            md.append(f"- [{format_name(mod.name)}](#-{mod.name.lower().replace('_', '-')})")
-    
-    # Paramètres globaux
+    # --- 2. INITIALISATION DES DONNÉES ---
+    common_keys = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_pattern", "infill_anchor", "infill_anchor_max"]
+    new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in common_keys}}
     common = new_data["COMMON_SETTINGS"]
-    md.extend([
-        "\n---\n\n## ⚙️ Paramètres d'Impression Généraux\n",
-        "| Paramètre | Valeur |", "| :--- | :--- |",
-        f"| Couches Solides | {check_val(common['top_solid_layers'])} / {check_val(common['bottom_solid_layers'])} |",
-        f"| Remplissage | {check_val(common['fill_density'])} / {check_val(common['fill_pattern'])} |",
-        f"| Ancre de remplissage | {check_val(common['infill_anchor'])} / {check_val(common['infill_anchor_max'])} |\n\n---"
-    ])
 
-    # Sections par module
-    for parent_name, modules in sections.items():
-        for mod in modules:
-            zip_name = f"module_{mod.name.replace(' ', '_')}"
-            shutil.make_archive(str(archive_dir / zip_name), 'zip', root_dir=mod)
+    # --- 3. ANALYSE ET ÉCRITURE ---
+    # On pré-calcule la liste des modules pour le sommaire
+    level1_dirs = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
+    modules_list = []
+    for l1 in level1_dirs:
+        for m in sorted([d for d in l1.iterdir() if d.is_dir()]):
+            if any(m.rglob("*.stl")):
+                modules_list.append((m, l1.name))
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write("# 🛠️ Nomenclature (BOM)\n\n## 📌 Sommaire\n")
+        
+        for mod_path, _ in modules_list:
+            clean_name = mod_path.name.replace('_', ' ').capitalize()
+            anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
+            f.write(f"- [{clean_name}](#-{anchor})\n")
+        
+        f.write("\n---\n\n## ⚙️ Paramètres d'Impression Généraux\n\n")
+        
+        def check(val): 
+            return f"**{val}**" if val and str(val).strip() else "🔴 _À définir_"
+
+        f.write("| Paramètre | Valeur |\n| :--- | :--- |\n")
+        f.write(f"| Couches Solides | {check(common['top_solid_layers'])} / {check(common['bottom_solid_layers'])} |\n")
+        f.write(f"| Remplissage | {check(common['fill_density'])} / {check(common['fill_pattern'])} |\n")
+        f.write(f"| Ancre de remplissage | {check(common['infill_anchor'])} / {check(common['infill_anchor_max'])} |\n\n---\n\n")
+
+        # --- 4. GÉNÉRATION DES SECTIONS ---
+        for module_path, parent_name in modules_list:
+            safe_name = module_path.name.replace(" ", "_")
+            zip_filename = f"module_{safe_name}"
+            shutil.make_archive(str(archive_dir / zip_filename), 'zip', root_dir=module_path)
             
-            dl_link = f"{raw_url}/archives/{urllib.parse.quote(zip_name)}.zip"
-            md.extend([f"\n## 📦 {format_name(mod.name)}", f"Section : `{parent_name}` | **[🗜️ Télécharger ZIP]({dl_link})**\n"])
-            md.append("| Structure | État | Périmètres | Vue 3D | Download |\n| :--- | :---: | :---: | :---: | :---: |")
+            clean_title = module_path.name.replace('_', ' ').capitalize()
+            f.write(f"## 📦 {clean_title}\n")
+            f.write(f"Section : `{parent_name}` | **[🗜️ Télécharger ZIP]({base_raw_url}/archives/{urllib.parse.quote(zip_filename)}.zip)**\n\n")
+            f.write("| Structure | État | Périmètres | Vue 3D | Download |\n| :--- | :---: | :---: | :---: | :---: |\n")
 
-            for item in sorted(mod.rglob("*")):
-                if not (item.is_dir() or item.suffix.lower() == ".stl"): continue
-                
-                rel = str(item.relative_to(root))
-                depth = len(item.relative_to(mod).parts)
-                prefix = f"{'&nbsp;' * 4 * depth}/ " if depth > 0 else ""
+            # On trie tous les éléments du module
+            for item in sorted(module_path.rglob("*")):
+                if not (item.is_dir() or item.suffix.lower() == ".stl"):
+                    continue
+                    
+                rel_path = str(item.relative_to(root_dir))
+                depth = len(item.relative_to(module_path).parts)
+                indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
                 
                 if item.suffix.lower() == ".stl":
-                    val = existing_data.get(rel, {}).get("perimeters")
-                    new_data[rel] = {"perimeters": val}
+                    old_perim = existing_data.get(rel_path, {}).get("perimeters")
+                    new_data[rel_path] = {"perimeters": old_perim}
                     
-                    status = "🟢" if val is not None else "🔴"
-                    u_path = urllib.parse.quote(rel)
-                    md.append(f"| {prefix}📄 {item.name} | {status} | {val or '---'} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
+                    status = "🟢" if old_perim is not None else "🔴"
+                    per = old_perim if old_perim is not None else "---"
+                    url_path = urllib.parse.quote(rel_path)
+                    f.write(f"| {indent}📄 {item.name} | {status} | {per} | [👁️]({url_path}) | [💾]({base_raw_url}/{url_path}) |\n")
                 else:
-                    md.append(f"| {prefix}📂 **{item.name}** | - | - | - | - |")
+                    f.write(f"| {indent}📂 **{item.name}** | - | - | - | - |\n")
             
-            md.append(f"\n[⬆️ Retour au sommaire](#-sommaire)\n\n---")
+            f.write("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---\n\n")
 
-    # 5. Sauvegarde atomique (Ecriture disque unique)
-    (root / "bom.md").write_text("\n".join(md), encoding="utf-8")
-    settings_path.write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
+    # --- 5. SAUVEGARDE DU JSON ---
+    with open(settings_file, "w", encoding="utf-8") as f:
+        json.dump(new_data, f, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     generate_bom()
