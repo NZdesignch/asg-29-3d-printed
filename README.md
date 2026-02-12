@@ -21,7 +21,7 @@ Réalisation d'un modèle réduit du planeur [ASG 29](https://www.alexander-schl
 | | Servos | `6x` `KST X10 mini` `2x` `KST CM653`|
 | **Motorisation** | Moteur | `---` `KV` |
 
-# 🛠️ Nomenclature (BOM)
+# 🛠️ Composants
 
 ## Impression 3D
 
