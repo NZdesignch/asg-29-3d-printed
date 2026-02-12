@@ -22,6 +22,12 @@ Réalisation d'un modèle réduit du planeur [ASG 29](https://www.alexander-schl
 | **Motorisation** | Moteur | `---` `KV` |
 
 # 🛠️ Nomenclature (BOM)
+
 ## Impression 3D
-La [Nomenclature](bom.md) présente chaque pièce à imprimer au format `STL` avec les paramètres d'impression importantsà respecter.
+
+La [Nomenclature](bom.md) présente chaque pièce à imprimer au format `STL` avec les paramètres d'impression importants à respecter.
+
+## Mécanique
+
+## Eléctronique
 
