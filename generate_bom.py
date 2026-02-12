@@ -1,108 +1,115 @@
 import json
 import shutil
 import subprocess
-from pathlib import Path
 import urllib.parse
+from pathlib import Path
+from contextlib import suppress
 
-def get_github_repo_info():
-    """Récupère l'URL raw du dépôt GitHub."""
+# --- CONFIGURATION ---
+EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives'}
+COMMON_KEYS = [
+    "top_solid_layers", "bottom_solid_layers", 
+    "fill_density", "fill_pattern", 
+    "infill_anchor", "infill_anchor_max"
+]
+
+def get_raw_url():
+    """Récupère l'URL de base GitHub Raw."""
     try:
-        cmd = ["git", "config", "--get", "remote.origin.url"]
-        remote_url = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode().strip()
-        repo_path = remote_url.replace("https://github.com", "").replace(".git", "").replace("git@github.com:", "")
-        return f"https://raw.githubusercontent.com{repo_path}/main"
+        url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
+        path = url.split("github.com")[-1].replace(".git", "").replace("git@github.com:", "/")
+        if not path.startswith("/"): path = "/" + path
+        return f"https://raw.githubusercontent.com{path}/main"
     except Exception:
         return "."
 
 def generate_bom():
-    # --- CONFIGURATION ---
-    root_dir = Path(".")
-    output_file = "bom.md"
-    settings_file = "print_settings.json"
-    archive_dir = Path("archives")
-    exclude = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives'}
-    
+    root = Path(".")
+    archive_dir = root / "archives"
     archive_dir.mkdir(exist_ok=True)
-    base_raw_url = get_github_repo_info()
-
-    # --- 1. LECTURE DU JSON ---
+    
+    settings_path = root / "print_settings.json"
+    raw_url = get_raw_url()
+    
+    # 1. Chargement des données
     existing_data = {}
-    if Path(settings_file).exists():
-        try:
-            with open(settings_file, "r", encoding="utf-8") as f:
-                existing_data = json.load(f)
-        except Exception as e:
-            print(f"❌ Erreur lecture JSON: {e}")
-            return 
+    if settings_path.exists():
+        with suppress(json.JSONDecodeError):
+            existing_data = json.loads(settings_path.read_text(encoding="utf-8"))
 
-    # --- 2. INITIALISATION DES DONNÉES ---
-    common_keys = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_pattern", "infill_anchor", "infill_anchor_max"]
-    new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in common_keys}}
-    common = new_data["COMMON_SETTINGS"]
-
-    # --- 3. ANALYSE ET ÉCRITURE ---
-    # On pré-calcule la liste des modules pour le sommaire
-    level1_dirs = sorted([d for d in root_dir.iterdir() if d.is_dir() and d.name not in exclude])
-    modules_list = []
+    new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
+    
+    # 2. Analyse des modules (Niveau 1 / Niveau 2)
+    sections = []
+    level1_dirs = sorted([d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE])
     for l1 in level1_dirs:
         for m in sorted([d for d in l1.iterdir() if d.is_dir()]):
             if any(m.rglob("*.stl")):
-                modules_list.append((m, l1.name))
+                sections.append((m, l1.name))
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write("# 🛠️ Nomenclature (BOM)\n\n## 📌 Sommaire\n")
+    # 3. Construction du Markdown
+    md = ["# 🛠️ Nomenclature (BOM)\n", "## 📌 Sommaire"]
+    
+    for mod_path, _ in sections:
+        clean_name = mod_path.name.replace('_', ' ').capitalize()
+        anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
+        md.append(f"- [{clean_name}](#-{anchor})")
+    
+    # Paramètres globaux
+    c = new_data["COMMON_SETTINGS"]
+    def check(v): return f"**{v}**" if v and str(v).strip() else "🔴 _À définir_"
+    
+    md.extend([
+        "\n---\n", "## ⚙️ Paramètres d'Impression Généraux\n",
+        "| Paramètre | Valeur |", "| :--- | :--- |",
+        f"| Couches Solides | {check(c['top_solid_layers'])} / {check(c['bottom_solid_layers'])} |",
+        f"| Remplissage | {check(c['fill_density'])} / {check(c['fill_pattern'])} |",
+        f"| Ancre de remplissage | {check(c['infill_anchor'])} / {check(c['infill_anchor_max'])} |\n",
+        "---"
+    ])
+
+    # 4. Génération des tableaux par module
+    for mod, parent in sections:
+        # Création ZIP
+        zip_name = f"module_{mod.name.replace(' ', '_')}"
+        shutil.make_archive(str(archive_dir / zip_name), 'zip', root_dir=mod)
         
-        for mod_path, _ in modules_list:
-            clean_name = mod_path.name.replace('_', ' ').capitalize()
-            anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
-            f.write(f"- [{clean_name}](#-{anchor})\n")
+        # Titre et Entête
+        clean_title = mod.name.replace('_', ' ').capitalize()
+        zip_url = f"{raw_url}/archives/{urllib.parse.quote(zip_name)}.zip"
         
-        f.write("\n---\n\n## ⚙️ Paramètres d'Impression Généraux\n\n")
-        
-        def check(val): 
-            return f"**{val}**" if val and str(val).strip() else "🔴 _À définir_"
+        md.extend([
+            f"\n## 📦 {clean_title}",
+            f"Section : `{parent}` | **[🗜️ Télécharger ZIP]({zip_url})**\n",
+            "| Structure | État | Périmètres | Vue 3D | Download |",
+            "| :--- | :---: | :---: | :---: | :---: |"
+        ])
 
-        f.write("| Paramètre | Valeur |\n| :--- | :--- |\n")
-        f.write(f"| Couches Solides | {check(common['top_solid_layers'])} / {check(common['bottom_solid_layers'])} |\n")
-        f.write(f"| Remplissage | {check(common['fill_density'])} / {check(common['fill_pattern'])} |\n")
-        f.write(f"| Ancre de remplissage | {check(common['infill_anchor'])} / {check(common['infill_anchor_max'])} |\n\n---\n\n")
-
-        # --- 4. GÉNÉRATION DES SECTIONS ---
-        for module_path, parent_name in modules_list:
-            safe_name = module_path.name.replace(" ", "_")
-            zip_filename = f"module_{safe_name}"
-            shutil.make_archive(str(archive_dir / zip_filename), 'zip', root_dir=module_path)
-            
-            clean_title = module_path.name.replace('_', ' ').capitalize()
-            f.write(f"## 📦 {clean_title}\n")
-            f.write(f"Section : `{parent_name}` | **[🗜️ Télécharger ZIP]({base_raw_url}/archives/{urllib.parse.quote(zip_filename)}.zip)**\n\n")
-            f.write("| Structure | État | Périmètres | Vue 3D | Download |\n| :--- | :---: | :---: | :---: | :---: |\n")
-
-            # On trie tous les éléments du module
-            for item in sorted(module_path.rglob("*")):
-                if not (item.is_dir() or item.suffix.lower() == ".stl"):
-                    continue
-                    
-                rel_path = str(item.relative_to(root_dir))
-                depth = len(item.relative_to(module_path).parts)
-                indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
+        # Parcours des fichiers du module
+        for item in sorted(mod.rglob("*")):
+            if not (item.is_dir() or item.suffix.lower() == ".stl"):
+                continue
                 
-                if item.suffix.lower() == ".stl":
-                    old_perim = existing_data.get(rel_path, {}).get("perimeters")
-                    new_data[rel_path] = {"perimeters": old_perim}
-                    
-                    status = "🟢" if old_perim is not None else "🔴"
-                    per = old_perim if old_perim is not None else "---"
-                    url_path = urllib.parse.quote(rel_path)
-                    f.write(f"| {indent}📄 {item.name} | {status} | {per} | [👁️]({url_path}) | [💾]({base_raw_url}/{url_path}) |\n")
-                else:
-                    f.write(f"| {indent}📂 **{item.name}** | - | - | - | - |\n")
+            rel = str(item.relative_to(root))
+            depth = len(item.relative_to(mod).parts)
+            # On recrée l'indentation exacte qui fonctionnait
+            indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
             
-            f.write("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---\n\n")
+            if item.suffix.lower() == ".stl":
+                val = existing_data.get(rel, {}).get("perimeters")
+                new_data[rel] = {"perimeters": val}
+                
+                status = "🟢" if val is not None else "🔴"
+                u_path = urllib.parse.quote(rel)
+                md.append(f"| {indent}📄 {item.name} | {status} | {val if val is not None else '---'} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
+            else:
+                md.append(f"| {indent}📂 **{item.name}** | - | - | - | - |")
+        
+        md.append(f"\n[⬆️ Retour au sommaire](#-sommaire)\n\n---")
 
-    # --- 5. SAUVEGARDE DU JSON ---
-    with open(settings_file, "w", encoding="utf-8") as f:
-        json.dump(new_data, f, indent=4, ensure_ascii=False)
+    # 5. Sauvegarde
+    Path(output_file).write_text("\n".join(md), encoding="utf-8")
+    settings_path.write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
 
 if __name__ == "__main__":
     generate_bom()
