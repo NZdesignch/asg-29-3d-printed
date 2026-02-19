@@ -1,58 +1,37 @@
-# Nom du workflow pour l'onglet Actions de GitHub
-name: Update STL BOM & Archives
+name: Auto-Generate BOM with 3D Previews
 
-# Déclencheurs : quand le robot doit-il travailler ?
 on:
   push:
-    # S'exécute si l'un de ces fichiers est ajouté ou modifié
-    paths:
-      - '**/*.stl'              # Fichiers 3D
-      - 'print_settings.json'   # Paramètres d'impression
-      - 'generate_bom.py'       # Le script Python lui-même
-      - '.github/workflows/*.yml' # Ce fichier de configuration
-  
-  # Permet de lancer le processus manuellement depuis l'interface GitHub
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
-  build:
-    # Serveur virtuel Linux
+  update-bom:
     runs-on: ubuntu-latest
-    
-    # CRUCIAL : Autorise le robot à sauvegarder les fichiers (BOM, JSON et ZIP)
     permissions:
       contents: write
-    
+
     steps:
-      # 1. Récupère les fichiers du dépôt sur le serveur
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 2. Installe Python pour exécuter le script
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 3. Exécute le script Python (Génère bom.md, maj JSON et crée les ZIP)
-      - name: Generate BOM and ZIPs
-        run: python generate_bom.py
+      - name: Install dependencies
+        run: |
+          pip install pyvista PyQt5
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-glx xvfb libglapi-mesa libosmesa6
 
-      # 4. Sauvegarde les modifications sur GitHub
+      - name: Run BOM Script
+        run: xvfb-run python generate_bom.py 
+
       - name: Commit and Push changes
-        # "continue-on-error" évite de bloquer si rien n'a changé (Working tree clean)
-        continue-on-error: true 
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          # Message de l'historique Git
-          # [skip ci] est vital pour ne pas créer de boucle infinie d'actions
-          commit_message: "System: Auto-update Nomenclature and ZIP archives [skip ci]"
-          
-          # Liste des fichiers que le robot a le droit de modifier/ajouter
-          # On inclut bom.md, le json, et tous les fichiers zip du dossier archives
-          file_pattern: 'bom.md print_settings.json archives/*.zip'
-          
-          # Options pour la stabilité du workflow
-          skip_dirty_check: true
-          skip_fetch: true
-          disable_globbing: false # Permet de détecter l'étoile dans archives/*.zip
+          commit_message: "🤖 Auto-update BOM with 3D previews [skip ci]"
+          file_pattern: 'bom.md print_settings.json archives/*.zip previews/*.png'
