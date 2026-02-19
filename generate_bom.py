@@ -101,7 +101,7 @@ def generate_bom():
                 
                 # URL GitHub
                 u_img = urllib.parse.quote(str(img_path.as_posix()))
-                img_tag = f"<img src='{raw_url}/{u_img}' width='60' style='background: transparent;'>"
+                img_tag = f"<img src='{raw_url}/{u_img}' width='90' style='background: transparent;'>"
                 
                 old_val = existing_data.get(str(rel_path), {}).get("perimeters")
                 new_data[str(rel_path)] = {"perimeters": old_val}
