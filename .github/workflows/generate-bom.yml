@@ -25,7 +25,9 @@ jobs:
         run: |
           pip install pyvista PyQt5
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-glx xvfb libglapi-mesa libosmesa6
+          # On remplace libgl1-mesa-glx par libgl1
+          sudo apt-get install -y libgl1 xvfb libglapi-mesa libosmesa6 libxrender1 libxcursor1 libxinerama1 libxrandr2 libxi6
+
 
       - name: Run BOM Script
         run: xvfb-run python generate_bom.py 
