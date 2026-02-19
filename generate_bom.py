@@ -1,79 +1,144 @@
-import json, shutil, subprocess, urllib.parse, pyvista as pv
+import json
+import shutil
+import subprocess
+import urllib.parse
+import pyvista as pv
 from pathlib import Path
 
 # --- CONFIGURATION ---
-OUTPUT_FILE, SETTINGS_FILE = "bom.md", "print_settings.json"
+OUTPUT_FILE = "bom.md"
+SETTINGS_FILE = "print_settings.json"
 EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
-COMMON_KEYS = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_pattern", "infill_anchor", "infill_anchor_max"]
+COMMON_KEYS = [
+    "top_solid_layers", "bottom_solid_layers", 
+    "fill_density", "fill_pattern", 
+    "infill_anchor", "infill_anchor_max"
+]
 
 def get_raw_url():
+    """Récupère l'URL raw du dépôt GitHub."""
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
-        repo = url.replace("https://github.com", "").replace("git@github.com:", "").removesuffix(".git")
-        return f"https://raw.githubusercontent.com{repo}/main"
-    except: return "."
+        repo = url.replace("https://github.com/", "").replace("git@github.com:", "").replace(".git", "")
+        return f"https://raw.githubusercontent.com/{repo}/main"
+    except Exception:
+        return "."
 
 def generate_preview(stl_path, img_path):
-    """Génère une image PNG grise sur fond blanc pour le STL."""
+    """Génère un rendu 3D isométrique du fichier STL."""
     try:
         mesh = pv.read(str(stl_path))
         plotter = pv.Plotter(off_screen=True)
-        plotter.add_mesh(mesh, color="#7fb3d5") # Un joli bleu-gris propre
+        plotter.add_mesh(mesh, color="#7fb3d5") # Bleu-gris technique
         plotter.view_isometric()
         plotter.background_color = "white"
         plotter.screenshot(str(img_path))
         plotter.close()
     except Exception as e:
-        print(f"⚠️ Erreur de rendu pour {stl_path.name}: {e}")
+        print(f"⚠️ Erreur rendu {stl_path.name}: {e}")
+
+def check(v):
+    if v is not None and str(v).strip() != "":
+        return f"**{v}**"
+    return "🔴 _À définir_"
 
 def generate_bom():
-    root, arc_dir, prev_dir = Path("."), Path("archives"), Path("previews")
+    root = Path(".")
+    archive_dir = root / "archives"
+    preview_dir = root / "previews"
     
-    # Nettoyage et création des dossiers
-    for d in [arc_dir, prev_dir]:
-        if d.exists(): shutil.rmtree(d)
+    # --- NETTOYAGE DES DOSSIERS ---
+    for d in [archive_dir, preview_dir]:
+        if d.exists():
+            shutil.rmtree(d)
         d.mkdir(exist_ok=True)
     
-    existing_data = json.loads(Path(SETTINGS_FILE).read_text("utf-8")) if Path(SETTINGS_FILE).exists() else {}
-    new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
+    settings_path = root / SETTINGS_FILE
     raw_url = get_raw_url()
     
-    sections = [(m, l1.name) for l1 in sorted(root.iterdir()) if l1.is_dir() and l1.name not in EXCLUDE 
-                for m in sorted(l1.iterdir()) if m.is_dir() and any(m.rglob("*.stl"))]
+    existing_data = {}
+    if settings_path.exists():
+        try:
+            existing_data = json.loads(settings_path.read_text(encoding="utf-8"))
+        except Exception:
+            print(f"⚠️ Erreur de lecture {SETTINGS_FILE}.")
+
+    new_data = {"COMMON_SETTINGS": {}}
+    old_common = existing_data.get("COMMON_SETTINGS", {})
+    for k in COMMON_KEYS:
+        new_data["COMMON_SETTINGS"][k] = old_common.get(k)
+
+    # --- ANALYSE MULTI-NIVEAUX (TA STRUCTURE) ---
+    sections = []
+    level1_dirs = sorted([d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE])
+    for l1 in level1_dirs:
+        for m in sorted([d for d in l1.iterdir() if d.is_dir()]):
+            if any(m.rglob("*.stl")):
+                sections.append((m, l1.name))
 
     md = ["# 📋 Nomenclature (BOM)\n", "## 📌 Sommaire"]
-    md += [f"- [{m.name.replace('_', ' ').capitalize()}](#-{m.name.lower().replace('_', '-')})" for m, _ in sections]
+    for mod_path, _ in sections:
+        clean_name = mod_path.name.replace('_', ' ').capitalize()
+        anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
+        md.append(f"- [{clean_name}](#-{anchor})")
     
-    # Paramètres d'impression généraux
     c = new_data["COMMON_SETTINGS"]
-    md += ["\n---\n", "## ⚙️ Paramètres Généraux\n", "| Paramètre | Valeur |", "| :--- | :--- |",
-           f"| Couches Solides | {c.get('top_solid_layers') or '---'} / {c.get('bottom_solid_layers') or '---'} |",
-           f"| Remplissage | {c.get('fill_density') or '---'} / {c.get('fill_pattern') or '---'} |\n", "---"]
+    md.extend([
+        "\n---\n", "## ⚙️ Paramètres d'Impression Généraux\n",
+        "| Paramètre | Valeur |", "| :--- | :--- |",
+        f"| Couches Solides | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
+        f"| Remplissage | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |",
+        f"| Ancre de remplissage | {check(c.get('infill_anchor'))} / {check(c.get('infill_anchor_max'))} |\n",
+        "---"
+    ])
 
+    # --- GÉNÉRATION DES TABLEAUX ---
     for mod, parent in sections:
-        shutil.make_archive(str(arc_dir / mod.name), 'zip', root_dir=mod)
-        md += [f"\n## 📦 {mod.name.replace('_', ' ').capitalize()}", 
-               f"Section : `{parent}` | **[🗜️ ZIP]({raw_url}/archives/{urllib.parse.quote(mod.name)}.zip)**\n",
-               "| Aperçu | Fichier | État | Périm. | 3D | 💾 |", "| :---: | :--- | :---: | :---: | :---: | :---: |"]
+        safe_zip_name = mod.name.replace(" ", "_")
+        shutil.make_archive(str(archive_dir / safe_zip_name), 'zip', root_dir=mod)
+        
+        clean_title = mod.name.replace('_', ' ').capitalize()
+        encoded_zip = urllib.parse.quote(safe_zip_name)
+        zip_url = f"{raw_url}/archives/{encoded_zip}.zip"
+        
+        md.extend([
+            f"\n## 📦 {clean_title}",
+            f"Section : `{parent}` | **[🗜️ Télécharger ZIP]({zip_url})**\n",
+            "| Aperçu | Structure | État | Périmètres | Vue 3D | Download |",
+            "| :---: | :--- | :---: | :---: | :---: | :---: |"
+        ])
 
-        for item in sorted(mod.rglob("*.stl")):
-            rel_p = item.relative_to(root)
-            # On génère l'image 3D
-            img_name = f"{item.stem}.png"
-            img_path = prev_dir / img_name
-            generate_preview(item, img_path)
+        for item in sorted(mod.rglob("*")):
+            if not (item.is_dir() or item.suffix.lower() == ".stl"):
+                continue
+                
+            rel_path = str(item.relative_to(root))
+            depth = len(item.relative_to(mod).parts)
+            indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
             
-            old_val = existing_data.get(str(rel_p), {}).get("perimeters")
-            new_data[str(rel_p)] = {"perimeters": old_val}
-            u_path, u_img = urllib.parse.quote(str(rel_p)), urllib.parse.quote(img_name)
-            
-            md.append(f"| ![]({raw_url}/previews/{u_img}) | 📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
+            if item.suffix.lower() == ".stl":
+                # Rendu 3D
+                img_name = f"{item.stem}.png"
+                img_path = preview_dir / img_name
+                generate_preview(item, img_path)
+                
+                old_val = existing_data.get(rel_path, {}).get("perimeters")
+                new_data[rel_path] = {"perimeters": old_val}
+                
+                status = "🟢" if old_val is not None else "🔴"
+                display_perim = old_val if old_val is not None else "---"
+                u_path = urllib.parse.quote(rel_path)
+                u_img = urllib.parse.quote(img_name)
+                
+                md.append(f"| ![]({raw_url}/previews/{u_img}) | {indent}📄 {item.name} | {status} | {display_perim} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
+            else:
+                md.append(f"| | {indent}📂 **{item.name}** | - | - | - | - |")
         
         md.append("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---")
 
-    Path(OUTPUT_FILE).write_text("\n".join(md), "utf-8")
-    Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), "utf-8")
-    print(f"✅ BOM et Previews 3D générés.")
+    Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
+    Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
+    print(f"✅ BOM généré avec succès.")
 
 if __name__ == "__main__":
     generate_bom()
