@@ -11,8 +11,8 @@ SETTINGS_FILE = "print_settings.json"
 PREVIEWS_DIR = Path("previews")
 EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
 COMMON_KEYS = [
-    "top_solid_layers", "bottom_solid_layers", 
-    "fill_density", "fill_pattern", 
+    "top_solid_layers", "bottom_solid_layers",
+    "fill_density", "fill_pattern",
     "infill_anchor", "infill_anchor_max"
 ]
 
@@ -25,12 +25,11 @@ def get_raw_url():
         return "."
 
 def generate_preview(stl_path, img_path):
-    """Génère un rendu 3D. Crée les dossiers parents si nécessaire."""
     try:
         img_path.parent.mkdir(parents=True, exist_ok=True)
         mesh = pv.read(str(stl_path))
         plotter = pv.Plotter(off_screen=True)
-        plotter.add_mesh(mesh, color="#7fb3d5", smooth_shading=True) 
+        plotter.add_mesh(mesh, color="#7fb3d5", smooth_shading=True)
         plotter.view_isometric()
         plotter.screenshot(str(img_path), transparent_background=True)
         plotter.close()
@@ -43,21 +42,23 @@ def check(v):
 def generate_bom():
     root = Path(".")
     arc_dir = root / "archives"
-    
+
     # Nettoyage
     for d in [arc_dir, PREVIEWS_DIR]:
         if d.exists(): shutil.rmtree(d)
         d.mkdir(exist_ok=True)
-    
+
     raw_url = get_raw_url()
-    
     existing_data = {}
     if Path(SETTINGS_FILE).exists():
-        try: existing_data = json.loads(Path(SETTINGS_FILE).read_text(encoding="utf-8"))
-        except: pass
+        try:
+            existing_data = json.loads(Path(SETTINGS_FILE).read_text(encoding="utf-8"))
+        except:
+            pass
 
     new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
 
+    # Génération du sommaire
     sections = []
     level1_dirs = sorted([d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE])
     for l1 in level1_dirs:
@@ -70,18 +71,19 @@ def generate_bom():
         clean_name = mod_path.name.replace('_', ' ').capitalize()
         anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
         md.append(f"- [{clean_name}](#-{anchor})")
-    
+
     # Paramètres globaux
     c = new_data["COMMON_SETTINGS"]
     md.extend(["\n---\n", "## ⚙️ Paramètres d'Impression\n", "| Paramètre | Valeur |", "| :--- | :--- |",
                f"| Couches | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
                f"| Infill | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |", "---"])
 
+    # Génération des sections
     for mod, parent in sections:
         safe_name = mod.name.replace(" ", "_")
         shutil.make_archive(str(arc_dir / safe_name), 'zip', root_dir=mod)
         zip_url = f"{raw_url}/archives/{urllib.parse.quote(safe_name)}.zip"
-        
+
         md.extend([f"\n## 📦 {mod.name.replace('_', ' ').capitalize()}",
                    f"Section : `{parent}` | **[🗜️ ZIP]({zip_url})**\n",
                    "| Aperçu | Structure | État | Périmètres | Vue 3D | Download |",
@@ -89,30 +91,26 @@ def generate_bom():
 
         for item in sorted(mod.rglob("*")):
             if not (item.is_dir() or item.suffix.lower() == ".stl"): continue
-            
+
             rel_path = item.relative_to(root)
             depth = len(item.relative_to(mod).parts)
             indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
-            
+
             if item.suffix.lower() == ".stl":
-                # MIROIR : On reproduit le chemin relatif dans le dossier previews
                 img_path = PREVIEWS_DIR / rel_path.with_suffix(".png")
                 generate_preview(item, img_path)
-                
-                # URL GitHub
                 u_img = urllib.parse.quote(str(img_path.as_posix()))
                 img_tag = f"<img src='{raw_url}/{u_img}' width='90' style='background: transparent;'>"
-                
                 old_val = existing_data.get(str(rel_path), {}).get("perimeters")
                 new_data[str(rel_path)] = {"perimeters": old_val}
-                
                 u_path = urllib.parse.quote(str(rel_path.as_posix()))
                 md.append(f"| {img_tag} | {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
             else:
                 md.append(f"| | {indent}📂 **{item.name}** | - | - | - | - |")
-        
+
         md.append("\n[⬆️ Sommaire](#-sommaire)\n\n---")
 
+    # Écriture des fichiers
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
     print(f"✅ Terminé : Structure 'previews/' miroir créée.")
