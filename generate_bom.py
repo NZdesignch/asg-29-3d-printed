@@ -28,10 +28,29 @@ def generate_preview(stl_path, img_path):
     try:
         img_path.parent.mkdir(parents=True, exist_ok=True)
         mesh = pv.read(str(stl_path))
+
+        # Normaliser la taille de la mesh pour un rendu cohérent
+        bounds = mesh.bounds
+        scale = 1.0 / max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
+        mesh = mesh.scale(scale, inplace=False)
+
         plotter = pv.Plotter(off_screen=True)
-        plotter.add_mesh(mesh, color="#7fb3d5", smooth_shading=True)
+        plotter.set_background("white")  # Fond blanc pour mieux voir les détails
+        plotter.add_mesh(
+            mesh,
+            color="#56789a",  # Couleur un peu plus foncée pour le contraste
+            smooth_shading=True,
+            specular=0.5,      # Ajoute un peu de brillance
+            specular_power=10, # Contrôle la netteté des reflets
+            ambient=0.3,      # Éclairage ambiant pour adoucir les ombres
+        )
+        plotter.add_light(pv.Light(position=(3, 3, 3), light_type="scene light"))
         plotter.view_isometric()
-        plotter.screenshot(str(img_path), transparent_background=True)
+        plotter.screenshot(
+            str(img_path),
+            transparent_background=False,  # Fond blanc pour le contraste
+            window_size=[512, 512],        # Taille suffisante
+        )
         plotter.close()
     except Exception as e:
         print(f"⚠️ Erreur rendu {stl_path.name}: {e}")
