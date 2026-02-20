@@ -19,8 +19,7 @@ Section : `stl` | **[🗜️ ZIP](https://raw.githubusercontent.com/NZdesignch/a
 
 | Aperçu | Structure | État | Périmètres | Vue 3D | Download |
 | :---: | :--- | :---: | :---: | :---: | :---: |
-| <img src='https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/previews/stl/01%20fuselage/Nervure%2001.png' width='90' style='background: transparent;'> | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 01.stl | 🔴 | --- | [👁️](stl/01%20fuselage/Nervure%2001.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/01%20fuselage/Nervure%2001.stl) |
-| <img src='https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/previews/stl/01%20fuselage/Nervure%2002.png' width='90' style='background: transparent;'> | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Nervure 02.stl | 🔴 | --- | [👁️](stl/01%20fuselage/Nervure%2002.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/01%20fuselage/Nervure%2002.stl) |
+| <img src='https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/previews/stl/01%20fuselage/Section%2004.png' width='90' style='background: transparent;'> | &nbsp;&nbsp;&nbsp;&nbsp;/ 📄 Section 04.stl | 🔴 | --- | [👁️](stl/01%20fuselage/Section%2004.stl) | [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/01%20fuselage/Section%2004.stl) |
 
 [⬆️ Sommaire](#-sommaire)
 
