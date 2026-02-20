@@ -2,12 +2,14 @@ import json
 import shutil
 import subprocess
 import urllib.parse
+import pyvista as pv
 from pathlib import Path
 
 # --- CONFIGURATION ---
 OUTPUT_FILE = "bom.md"
 SETTINGS_FILE = "print_settings.json"
-EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives'}
+PREVIEWS_DIR = Path("previews")
+EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
 COMMON_KEYS = [
     "top_solid_layers", "bottom_solid_layers", 
     "fill_density", "fill_pattern", 
@@ -15,47 +17,47 @@ COMMON_KEYS = [
 ]
 
 def get_raw_url():
-    """Récupère l'URL raw du dépôt GitHub pour les liens de téléchargement."""
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
-        repo = url.replace("https://github.com/", "").replace("git@github.com:", "").replace(".git", "")
-        return f"https://raw.githubusercontent.com/{repo}/main"
-    except Exception:
+        repo = url.replace("https://github.com", "").replace("git@github.com:", "").removesuffix(".git")
+        return f"https://raw.githubusercontent.com{repo}/main"
+    except:
         return "."
 
+def generate_preview(stl_path, img_path):
+    """Génère un rendu 3D. Crée les dossiers parents si nécessaire."""
+    try:
+        img_path.parent.mkdir(parents=True, exist_ok=True)
+        mesh = pv.read(str(stl_path))
+        plotter = pv.Plotter(off_screen=True)
+        plotter.add_mesh(mesh, color="#7fb3d5", smooth_shading=True) 
+        plotter.view_isometric()
+        plotter.screenshot(str(img_path), transparent_background=True)
+        plotter.close()
+    except Exception as e:
+        print(f"⚠️ Erreur rendu {stl_path.name}: {e}")
+
 def check(v):
-    """Vérifie si une valeur est définie pour l'affichage Markdown."""
-    if v is not None and str(v).strip() != "":
-        return f"**{v}**"
-    return "🔴 _À définir_"
+    return f"**{v}**" if v and str(v).strip() != "" else "🔴 _À définir_"
 
 def generate_bom():
     root = Path(".")
-    archive_dir = root / "archives"
+    arc_dir = root / "archives"
     
-    # --- NETTOYAGE DU DOSSIER ARCHIVES ---
-    if archive_dir.exists():
-        shutil.rmtree(archive_dir) # Supprime le dossier et tout son contenu
-    archive_dir.mkdir(exist_ok=True) # Re-crée un dossier vide propre
+    # Nettoyage
+    for d in [arc_dir, PREVIEWS_DIR]:
+        if d.exists(): shutil.rmtree(d)
+        d.mkdir(exist_ok=True)
     
-    settings_path = root / SETTINGS_FILE
     raw_url = get_raw_url()
     
-    # 1. Chargement des données existantes
     existing_data = {}
-    if settings_path.exists():
-        try:
-            existing_data = json.loads(settings_path.read_text(encoding="utf-8"))
-        except Exception:
-            print(f"⚠️ Erreur de lecture {SETTINGS_FILE}.")
+    if Path(SETTINGS_FILE).exists():
+        try: existing_data = json.loads(Path(SETTINGS_FILE).read_text(encoding="utf-8"))
+        except: pass
 
-    # Initialisation du nouveau dictionnaire de réglages
-    new_data = {"COMMON_SETTINGS": {}}
-    old_common = existing_data.get("COMMON_SETTINGS", {})
-    for k in COMMON_KEYS:
-        new_data["COMMON_SETTINGS"][k] = old_common.get(k)
+    new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
 
-    # 2. Analyse de l'arborescence (Niveau 1 > Niveau 2)
     sections = []
     level1_dirs = sorted([d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE])
     for l1 in level1_dirs:
@@ -63,71 +65,57 @@ def generate_bom():
             if any(m.rglob("*.stl")):
                 sections.append((m, l1.name))
 
-    # 3. Construction du contenu Markdown (En-tête et Sommaire)
     md = ["# 📋 Nomenclature (BOM)\n", "## 📌 Sommaire"]
-    
     for mod_path, _ in sections:
         clean_name = mod_path.name.replace('_', ' ').capitalize()
         anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
         md.append(f"- [{clean_name}](#-{anchor})")
     
-    # Paramètres d'impression généraux
+    # Paramètres globaux
     c = new_data["COMMON_SETTINGS"]
-    md.extend([
-        "\n---\n", "## ⚙️ Paramètres d'Impression Généraux\n",
-        "| Paramètre | Valeur |", "| :--- | :--- |",
-        f"| Couches Solides | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
-        f"| Remplissage | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |",
-        f"| Ancre de remplissage | {check(c.get('infill_anchor'))} / {check(c.get('infill_anchor_max'))} |\n",
-        "---"
-    ])
+    md.extend(["\n---\n", "## ⚙️ Paramètres d'Impression\n", "| Paramètre | Valeur |", "| :--- | :--- |",
+               f"| Couches | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
+               f"| Infill | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |", "---"])
 
-    # 4. Génération des tableaux détaillés par dossier
     for mod, parent in sections:
-        # Nom de l'archive épuré (sans préfixe)
-        safe_zip_name = mod.name.replace(" ", "_")
-        zip_filename = f"{safe_zip_name}" 
-        shutil.make_archive(str(archive_dir / zip_filename), 'zip', root_dir=mod)
+        safe_name = mod.name.replace(" ", "_")
+        shutil.make_archive(str(arc_dir / safe_name), 'zip', root_dir=mod)
+        zip_url = f"{raw_url}/archives/{urllib.parse.quote(safe_name)}.zip"
         
-        clean_title = mod.name.replace('_', ' ').capitalize()
-        encoded_zip = urllib.parse.quote(zip_filename)
-        zip_url = f"{raw_url}/archives/{encoded_zip}.zip"
-        
-        md.extend([
-            f"\n## 📦 {clean_title}",
-            f"Section : `{parent}` | **[🗜️ Télécharger ZIP]({zip_url})**\n",
-            "| Structure | État | Périmètres | Vue 3D | Download |",
-            "| :--- | :---: | :---: | :---: | :---: |"
-        ])
+        md.extend([f"\n## 📦 {mod.name.replace('_', ' ').capitalize()}",
+                   f"Section : `{parent}` | **[🗜️ ZIP]({zip_url})**\n",
+                   "| Aperçu | Structure | État | Périmètres | Vue 3D | Download |",
+                   "| :---: | :--- | :---: | :---: | :---: | :---: |"])
 
-        # Scan des fichiers internes
         for item in sorted(mod.rglob("*")):
-            if not (item.is_dir() or item.suffix.lower() == ".stl"):
-                continue
-                
-            rel_path = str(item.relative_to(root))
+            if not (item.is_dir() or item.suffix.lower() == ".stl"): continue
+            
+            rel_path = item.relative_to(root)
             depth = len(item.relative_to(mod).parts)
             indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
             
             if item.suffix.lower() == ".stl":
-                old_val = existing_data.get(rel_path, {}).get("perimeters")
-                new_data[rel_path] = {"perimeters": old_val}
+                # MIROIR : On reproduit le chemin relatif dans le dossier previews
+                img_path = PREVIEWS_DIR / rel_path.with_suffix(".png")
+                generate_preview(item, img_path)
                 
-                status = "🟢" if old_val is not None else "🔴"
-                display_perim = old_val if old_val is not None else "---"
-                u_path = urllib.parse.quote(rel_path)
+                # URL GitHub
+                u_img = urllib.parse.quote(str(img_path.as_posix()))
+                img_tag = f"<img src='{raw_url}/{u_img}' width='90' style='background: transparent;'>"
                 
-                md.append(f"| {indent}📄 {item.name} | {status} | {display_perim} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
+                old_val = existing_data.get(str(rel_path), {}).get("perimeters")
+                new_data[str(rel_path)] = {"perimeters": old_val}
+                
+                u_path = urllib.parse.quote(str(rel_path.as_posix()))
+                md.append(f"| {img_tag} | {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
             else:
-                md.append(f"| {indent}📂 **{item.name}** | - | - | - | - |")
+                md.append(f"| | {indent}📂 **{item.name}** | - | - | - | - |")
         
-        # Retour à la ligne et séparateur
-        md.append("\n[⬆️ Retour au sommaire](#-sommaire)\n\n---")
+        md.append("\n[⬆️ Sommaire](#-sommaire)\n\n---")
 
-    # 5. Sauvegarde des fichiers
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
-    print(f"✅ BOM généré. Dossier {archive_dir}/ nettoyé et mis à jour.")
+    print(f"✅ Terminé : Structure 'previews/' miroir créée.")
 
 if __name__ == "__main__":
     generate_bom()
