@@ -34,26 +34,39 @@ def generate_preview(stl_path, img_path):
         scale = 1.0 / max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
         mesh = mesh.scale(scale, inplace=False)
 
+        # Recalculer les normales si nécessaire
+        if not mesh.is_all_triangles:
+            mesh = mesh.triangulate()
+        mesh = mesh.compute_normals()
+
         plotter = pv.Plotter(off_screen=True)
-        plotter.set_background("white")  # Fond blanc pour mieux voir les détails
+        plotter.set_background("white")  # Fond blanc comme GitHub
+
+        # Ajouter la mesh avec un rendu lisse et sans arêtes
         plotter.add_mesh(
             mesh,
-            color="#56789a",  # Couleur un peu plus foncée pour le contraste
+            color="#e1e1e1",  # Gris clair comme GitHub
             smooth_shading=True,
-            specular=0.5,      # Ajoute un peu de brillance
-            specular_power=10, # Contrôle la netteté des reflets
-            ambient=0.3,      # Éclairage ambiant pour adoucir les ombres
+            show_edges=False,  # Masquer les arêtes
+            specular=0.1,      # Très peu de brillance
+            specular_power=5, # Reflets très doux
+            ambient=0.7,      # Éclairage ambiant fort pour adoucir les ombres
         )
-        plotter.add_light(pv.Light(position=(3, 3, 3), light_type="scene light"))
+
+        # Ajouter une lumière douce et uniforme
+        plotter.add_light(pv.Light(position=(1, 1, 3), focal_point=(0, 0, 0), intensity=0.8))
+        plotter.add_light(pv.Light(position=(-1, -1, 3), focal_point=(0, 0, 0), intensity=0.5))
+
         plotter.view_isometric()
         plotter.screenshot(
             str(img_path),
-            transparent_background=False,  # Fond blanc pour le contraste
-            window_size=[512, 512],        # Taille suffisante
+            transparent_background=False,
+            window_size=[512, 512],
         )
         plotter.close()
     except Exception as e:
         print(f"⚠️ Erreur rendu {stl_path.name}: {e}")
+
 
 def check(v):
     return f"**{v}**" if v and str(v).strip() != "" else "🔴 _À définir_"
