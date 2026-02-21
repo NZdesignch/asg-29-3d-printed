@@ -2,13 +2,12 @@ import json
 import shutil
 import subprocess
 import urllib.parse
-import pyvista as pv
 from pathlib import Path
 
 # --- CONFIGURATION ---
 OUTPUT_FILE = "bom.md"
 SETTINGS_FILE = "print_settings.json"
-PREVIEWS_DIR = Path("previews")
+# Les dossiers previews ne sont plus nécessaires avec le viewer GitHub
 EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
 COMMON_KEYS = [
     "top_solid_layers", "bottom_solid_layers", 
@@ -16,26 +15,18 @@ COMMON_KEYS = [
     "infill_anchor", "infill_anchor_max"
 ]
 
-def get_raw_url():
+def get_repo_info():
+    """Récupère l'URL de base pour le raw et l'URL du viewer GitHub."""
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
         repo = url.replace("https://github.com", "").replace("git@github.com:", "").removesuffix(".git")
-        return f"https://raw.githubusercontent.com{repo}/main"
+        # URL pour les fichiers bruts (download)
+        raw = f"https://raw.githubusercontent.com{repo}/main"
+        # URL pour l'interface GitHub (viewer)
+        blob = f"https://github.com{repo}/blob/main"
+        return raw, blob
     except:
-        return "."
-
-def generate_preview(stl_path, img_path):
-    """Génère un rendu 3D. Crée les dossiers parents si nécessaire."""
-    try:
-        img_path.parent.mkdir(parents=True, exist_ok=True)
-        mesh = pv.read(str(stl_path))
-        plotter = pv.Plotter(off_screen=True)
-        plotter.add_mesh(mesh, color="#7fb3d5", smooth_shading=True) 
-        plotter.view_isometric()
-        plotter.screenshot(str(img_path), transparent_background=True)
-        plotter.close()
-    except Exception as e:
-        print(f"⚠️ Erreur rendu {stl_path.name}: {e}")
+        return ".", "."
 
 def check(v):
     return f"**{v}**" if v and str(v).strip() != "" else "🔴 _À définir_"
@@ -44,12 +35,11 @@ def generate_bom():
     root = Path(".")
     arc_dir = root / "archives"
     
-    # Nettoyage
-    for d in [arc_dir, PREVIEWS_DIR]:
-        if d.exists(): shutil.rmtree(d)
-        d.mkdir(exist_ok=True)
+    # Nettoyage archives uniquement
+    if arc_dir.exists(): shutil.rmtree(arc_dir)
+    arc_dir.mkdir(exist_ok=True)
     
-    raw_url = get_raw_url()
+    raw_url, blob_url = get_repo_info()
     
     existing_data = {}
     if Path(SETTINGS_FILE).exists():
@@ -75,7 +65,7 @@ def generate_bom():
     c = new_data["COMMON_SETTINGS"]
     md.extend(["\n---\n", "## ⚙️ Paramètres d'Impression\n", "| Paramètre | Valeur |", "| :--- | :--- |",
                f"| Couches | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
-               f"| Infill | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |", "---"])
+               f"| Infill | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |", "\n---"])
 
     for mod, parent in sections:
         safe_name = mod.name.replace(" ", "_")
@@ -84,8 +74,8 @@ def generate_bom():
         
         md.extend([f"\n## 📦 {mod.name.replace('_', ' ').capitalize()}",
                    f"Section : `{parent}` | **[🗜️ ZIP]({zip_url})**\n",
-                   "| Aperçu | Structure | État | Périmètres | Vue 3D | Download |",
-                   "| :---: | :--- | :---: | :---: | :---: | :---: |"])
+                   "| 3D View | Structure | État | Périmètres | Download |",
+                   "| :---: | :--- | :---: | :---: | :---: |"])
 
         for item in sorted(mod.rglob("*")):
             if not (item.is_dir() or item.suffix.lower() == ".stl"): continue
@@ -95,27 +85,25 @@ def generate_bom():
             indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
             
             if item.suffix.lower() == ".stl":
-                # MIROIR : On reproduit le chemin relatif dans le dossier previews
-                img_path = PREVIEWS_DIR / rel_path.with_suffix(".png")
-                generate_preview(item, img_path)
+                u_path = urllib.parse.quote(str(rel_path.as_posix()))
                 
-                # URL GitHub
-                u_img = urllib.parse.quote(str(img_path.as_posix()))
-                img_tag = f"<img src='{raw_url}/{u_img}' width='90' style='background: transparent;'>"
+                # Le viewer GitHub est simplement l'URL du fichier sur github.com
+                # GitHub affiche automatiquement une miniature interactive (canvas)
+                view_link = f"[🔍 Vue 3D]({blob_url}/{u_path})"
                 
                 old_val = existing_data.get(str(rel_path), {}).get("perimeters")
                 new_data[str(rel_path)] = {"perimeters": old_val}
                 
-                u_path = urllib.parse.quote(str(rel_path.as_posix()))
-                md.append(f"| {img_tag} | {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | [👁️]({u_path}) | [💾]({raw_url}/{u_path}) |")
+                # On met le lien vers le viewer dans la première colonne
+                md.append(f"| {view_link} | {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | [💾]({raw_url}/{u_path}) |")
             else:
-                md.append(f"| | {indent}📂 **{item.name}** | - | - | - | - |")
+                md.append(f"| | {indent}📂 **{item.name}** | - | - | - |")
         
         md.append("\n[⬆️ Sommaire](#-sommaire)\n\n---")
 
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
-    print(f"✅ Terminé : Structure 'previews/' miroir créée.")
+    print(f"✅ BOM généré avec succès en utilisant le Viewer GitHub.")
 
 if __name__ == "__main__":
     generate_bom()
