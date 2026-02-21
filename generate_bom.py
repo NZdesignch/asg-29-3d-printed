@@ -7,7 +7,6 @@ from pathlib import Path
 # --- CONFIGURATION ---
 OUTPUT_FILE = "bom.md"
 SETTINGS_FILE = "print_settings.json"
-# Les dossiers previews ne sont plus nécessaires avec le viewer GitHub
 EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
 COMMON_KEYS = [
     "top_solid_layers", "bottom_solid_layers", 
@@ -16,13 +15,11 @@ COMMON_KEYS = [
 ]
 
 def get_repo_info():
-    """Récupère l'URL de base pour le raw et l'URL du viewer GitHub."""
+    """Récupère l'URL de base pour le raw (téléchargement) et le blob (viewer)."""
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
         repo = url.replace("https://github.com", "").replace("git@github.com:", "").removesuffix(".git")
-        # URL pour les fichiers bruts (download)
         raw = f"https://raw.githubusercontent.com{repo}/main"
-        # URL pour l'interface GitHub (viewer)
         blob = f"https://github.com{repo}/blob/main"
         return raw, blob
     except:
@@ -35,7 +32,6 @@ def generate_bom():
     root = Path(".")
     arc_dir = root / "archives"
     
-    # Nettoyage archives uniquement
     if arc_dir.exists(): shutil.rmtree(arc_dir)
     arc_dir.mkdir(exist_ok=True)
     
@@ -61,11 +57,10 @@ def generate_bom():
         anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
         md.append(f"- [{clean_name}](#-{anchor})")
     
-    # Paramètres globaux
     c = new_data["COMMON_SETTINGS"]
     md.extend(["\n---\n", "## ⚙️ Paramètres d'Impression\n", "| Paramètre | Valeur |", "| :--- | :--- |",
                f"| Couches | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
-               f"| Infill | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |", "\n---"])
+               f"| Remplissage | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |", "\n---"])
 
     for mod, parent in sections:
         safe_name = mod.name.replace(" ", "_")
@@ -74,9 +69,10 @@ def generate_bom():
         
         md.extend([f"\n## 📦 {mod.name.replace('_', ' ').capitalize()}",
                    f"Section : `{parent}` | **[🗜️ ZIP]({zip_url})**\n",
-                   "| 3D View | Structure | État | Périmètres | Download |",
+                   "| Vue 3D | Structure | État | Périmètres | Télécharger |",
                    "| :---: | :--- | :---: | :---: | :---: |"])
 
+    # --- PARTIE MODIFIÉE POUR L'OUVERTURE EN NOUVEL ONGLET ---
         for item in sorted(mod.rglob("*")):
             if not (item.is_dir() or item.suffix.lower() == ".stl"): continue
             
@@ -87,15 +83,14 @@ def generate_bom():
             if item.suffix.lower() == ".stl":
                 u_path = urllib.parse.quote(str(rel_path.as_posix()))
                 
-                # Le viewer GitHub est simplement l'URL du fichier sur github.com
-                # GitHub affiche automatiquement une miniature interactive (canvas)
-                view_link = f"[🔍 Vue 3D]({blob_url}/{u_path})"
+                # Utilisation de la balise <a> pour forcer le target="_blank"
+                view_link = f'<a href="{blob_url}/{u_path}" target="_blank">👁️ Voir</a>'
+                download_link = f'[💾]({raw_url}/{u_path})'
                 
                 old_val = existing_data.get(str(rel_path), {}).get("perimeters")
                 new_data[str(rel_path)] = {"perimeters": old_val}
                 
-                # On met le lien vers le viewer dans la première colonne
-                md.append(f"| {view_link} | {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | [💾]({raw_url}/{u_path}) |")
+                md.append(f"| {view_link} | {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | {download_link} |")
             else:
                 md.append(f"| | {indent}📂 **{item.name}** | - | - | - |")
         
@@ -103,7 +98,7 @@ def generate_bom():
 
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
-    print(f"✅ BOM généré avec succès en utilisant le Viewer GitHub.")
+    print(f"✅ BOM généré : Liens 3D configurés pour nouvel onglet.")
 
 if __name__ == "__main__":
     generate_bom()
