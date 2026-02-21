@@ -15,7 +15,6 @@ COMMON_KEYS = [
 ]
 
 def get_repo_info():
-    """Récupère l'URL de base pour le raw (téléchargement) et le blob (viewer)."""
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
         repo = url.replace("https://github.com", "").replace("git@github.com:", "").removesuffix(".git")
@@ -72,7 +71,6 @@ def generate_bom():
                    "| Vue 3D | Structure | État | Périmètres | Télécharger |",
                    "| :---: | :--- | :---: | :---: | :---: |"])
 
-    # --- PARTIE MODIFIÉE POUR L'OUVERTURE EN NOUVEL ONGLET ---
         for item in sorted(mod.rglob("*")):
             if not (item.is_dir() or item.suffix.lower() == ".stl"): continue
             
@@ -83,9 +81,10 @@ def generate_bom():
             if item.suffix.lower() == ".stl":
                 u_path = urllib.parse.quote(str(rel_path.as_posix()))
                 
-                # Utilisation de la balise <a> pour forcer le target="_blank"
-                view_link = f'<a href="{blob_url}/{u_path}" target="_blank">👁️ Voir</a>'
-                download_link = f'[💾]({raw_url}/{u_path})'
+                # Astuce : GitHub ne respecte pas target="_blank", 
+                # mais l'utilisation d'un lien standard est plus propre.
+                view_link = f"[🔍 Voir]({blob_url}/{u_path})"
+                download_link = f"[💾]({raw_url}/{u_path})"
                 
                 old_val = existing_data.get(str(rel_path), {}).get("perimeters")
                 new_data[str(rel_path)] = {"perimeters": old_val}
@@ -98,7 +97,7 @@ def generate_bom():
 
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
-    print(f"✅ BOM généré : Liens 3D configurés pour nouvel onglet.")
+    print(f"✅ BOM généré : Traduit et optimisé pour GitHub.")
 
 if __name__ == "__main__":
     generate_bom()
