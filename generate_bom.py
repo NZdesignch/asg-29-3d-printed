@@ -20,9 +20,9 @@ COMMON_KEYS = [
 
 def get_repo_info():
     """
-    Récupère les URLs de base du dépôt GitHub via git.
+    Recupere les URLs de base du depot GitHub via git.
     Retourne (raw_url, blob_url) pour construire les liens vers les fichiers.
-    En cas d'échec (pas de dépôt git), retourne (".", ".").
+    En cas d'echec (pas de depot git), retourne (".", ".").
     """
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
@@ -34,6 +34,8 @@ def get_repo_info():
 
 def check(v):
     """
-    Formate une valeur pour l'affichage Markdown :
-    - Si la valeur est définie et non vide : retourne la valeur en gras.
-    - Sinon : retourne un in
+    Formate une valeur pour l'affichage Markdown.
+    Si la valeur est definie et non vide : retourne la valeur en gras.
+    Sinon : retourne un indicateur visuel.
+    """
+    return f"**{v}**
