@@ -1,8 +1,8 @@
 # 📋 Nomenclature (BOM)
 
 ## 📌 Sommaire
-- [01 fuselage](#-01 fuselage)
-- [04 aile gauche](#-04 aile gauche)
+- [📦 01 fuselage](#01-fuselage)
+- [📦 04 aile gauche](#04-aile-gauche)
 
 ---
 
