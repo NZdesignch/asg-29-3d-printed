@@ -3,9 +3,7 @@
         "top_solid_layers": 3,
         "bottom_solid_layers": 3,
         "fill_density": "4 %",
-        "fill_pattern": "Grille",
-        "infill_anchor": "2 mm",
-        "infill_anchor_max": "2 mm"
+        "fill_pattern": "Grille"
     },
     "stl/01 fuselage/Section 04.stl": {
         "perimeters": null
