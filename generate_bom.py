@@ -1,17 +1,16 @@
 import json
+import re
 import shutil
 import subprocess
 import urllib.parse
 from pathlib import Path
 
 # --- CONFIGURATION ---
-OUTPUT_FILE = "bom.md"          # Fichier Markdown généré
-SETTINGS_FILE = "print_settings.json"  # Fichier JSON persistant les réglages d'impression
+OUTPUT_FILE = "bom.md"
+SETTINGS_FILE = "print_settings.json"
 
-# Dossiers ignorés lors du scan du dépôt
 EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
 
-# Clés de paramètres d'impression communs à tous les modules
 COMMON_KEYS = [
     "top_solid_layers", "bottom_solid_layers",
     "fill_density", "fill_pattern",
@@ -27,7 +26,6 @@ def get_repo_info():
     """
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
-        # Normalise les formats HTTPS et SSH en chemin relatif /owner/repo
         repo = url.replace("https://github.com", "").replace("git@github.com:", "").removesuffix(".git")
         return f"https://raw.githubusercontent.com{repo}/main", f"https://github.com{repo}/blob/main"
     except:
@@ -41,6 +39,22 @@ def check(v):
     - Sinon : retourne un indicateur visuel "À définir".
     """
     return f"**{v}**" if v and str(v).strip() else "🔴 _À définir_"
+
+
+def to_github_anchor(heading_text):
+    """
+    Génère une ancre GitHub valide depuis un texte de titre Markdown.
+    Règles GitHub :
+    - Tout mettre en minuscules
+    - Supprimer les caractères qui ne sont pas des lettres, chiffres, espaces ou tirets
+      (cela inclut les emojis et la ponctuation)
+    - Remplacer les espaces par des tirets
+    """
+    anchor = heading_text.lower()
+    anchor = re.sub(r'[^\w\s-]', '', anchor)     # supprime emojis et caractères spéciaux
+    anchor = re.sub(r'\s+', '-', anchor.strip())  # espaces → tirets
+    anchor = re.sub(r'-+', '-', anchor)           # tirets multiples → un seul
+    return anchor.strip('-')
 
 
 def generate_bom():
@@ -79,12 +93,20 @@ def generate_bom():
         if any(m.rglob("*.stl"))
     ]
 
+    # Pré-calcule les titres pour garantir la cohérence sommaire ↔ sections
+    module_headings = {
+        m.name: f"📦 {m.name.replace('_', ' ').capitalize()}"
+        for m, _ in sections
+    }
+
     # --- Génération du Markdown ---
 
     # En-tête et sommaire avec liens d'ancrage vers chaque module
     md = ["# 📋 Nomenclature (BOM)\n", "## 📌 Sommaire"]
+
+    # Liens du sommaire : ancre générée depuis le titre réel du heading
     md += [
-        f"- [{m.name.replace('_', ' ').capitalize()}](#-{m.name.lower().replace('_', '-')})"
+        f"- [{module_headings[m.name]}](#{to_github_anchor(module_headings[m.name])})"
         for m, _ in sections
     ]
 
@@ -105,9 +127,12 @@ def generate_bom():
         shutil.make_archive(str(arc_dir / safe_name), 'zip', root_dir=mod)
         zip_url = f"{raw_url}/archives/{urllib.parse.quote(safe_name)}.zip"
 
+        # Titre identique à celui utilisé pour générer l'ancre dans le sommaire
+        heading = module_headings[mod.name]
+
         # En-tête de section avec lien ZIP
         md += [
-            f"\n## 📦 {mod.name.replace('_', ' ').capitalize()}",
+            f"\n## {heading}",
             f"Section : `{parent}` | **[🗜️ ZIP]({zip_url})**\n",
             "| Vue 3D | Structure | État | Périmètres | Télécharger |",
             "| :---: | :--- | :---: | :---: | :---: |"
