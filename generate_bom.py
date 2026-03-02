@@ -5,99 +5,151 @@ import urllib.parse
 from pathlib import Path
 
 # --- CONFIGURATION ---
-OUTPUT_FILE = "bom.md"
-SETTINGS_FILE = "print_settings.json"
+OUTPUT_FILE = "bom.md"          # Fichier Markdown généré
+SETTINGS_FILE = "print_settings.json"  # Fichier JSON persistant les réglages d'impression
+
+# Dossiers ignorés lors du scan du dépôt
 EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
+
+# Clés de paramètres d'impression communs à tous les modules
 COMMON_KEYS = [
-    "top_solid_layers", "bottom_solid_layers", 
-    "fill_density", "fill_pattern", 
+    "top_solid_layers", "bottom_solid_layers",
+    "fill_density", "fill_pattern",
     "infill_anchor", "infill_anchor_max"
 ]
 
+
 def get_repo_info():
+    """
+    Récupère les URLs de base du dépôt GitHub via git.
+    Retourne (raw_url, blob_url) pour construire les liens vers les fichiers.
+    En cas d'échec (pas de dépôt git), retourne (".", ".").
+    """
     try:
         url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], text=True).strip()
+        # Normalise les formats HTTPS et SSH en chemin relatif /owner/repo
         repo = url.replace("https://github.com", "").replace("git@github.com:", "").removesuffix(".git")
-        raw = f"https://raw.githubusercontent.com{repo}/main"
-        blob = f"https://github.com{repo}/blob/main"
-        return raw, blob
+        return f"https://raw.githubusercontent.com{repo}/main", f"https://github.com{repo}/blob/main"
     except:
         return ".", "."
 
+
 def check(v):
-    return f"**{v}**" if v and str(v).strip() != "" else "🔴 _À définir_"
+    """
+    Formate une valeur pour l'affichage Markdown :
+    - Si la valeur est définie et non vide : retourne la valeur en gras.
+    - Sinon : retourne un indicateur visuel "À définir".
+    """
+    return f"**{v}**" if v and str(v).strip() else "🔴 _À définir_"
+
 
 def generate_bom():
+    """
+    Fonction principale : scanne le dépôt, génère le fichier BOM Markdown
+    et met à jour le fichier JSON des paramètres d'impression.
+    """
     root = Path(".")
     arc_dir = root / "archives"
-    
-    if arc_dir.exists(): shutil.rmtree(arc_dir)
-    arc_dir.mkdir(exist_ok=True)
-    
+
+    # Recrée le dossier d'archives proprement à chaque génération
+    if arc_dir.exists():
+        shutil.rmtree(arc_dir)
+    arc_dir.mkdir()
+
     raw_url, blob_url = get_repo_info()
-    
+
+    # Charge les données existantes du fichier JSON (pour conserver les valeurs déjà saisies)
     existing_data = {}
     if Path(SETTINGS_FILE).exists():
-        try: existing_data = json.loads(Path(SETTINGS_FILE).read_text(encoding="utf-8"))
-        except: pass
+        try:
+            existing_data = json.loads(Path(SETTINGS_FILE).read_text(encoding="utf-8"))
+        except:
+            pass  # Fichier corrompu ou absent : on repart de zéro
 
-    new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
+    # Initialise les nouvelles données en récupérant les paramètres communs existants
+    existing_common = existing_data.get("COMMON_SETTINGS", {})
+    new_data = {"COMMON_SETTINGS": {k: existing_common.get(k) for k in COMMON_KEYS}}
 
-    sections = []
-    level1_dirs = sorted([d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE])
-    for l1 in level1_dirs:
-        for m in sorted([d for d in l1.iterdir() if d.is_dir()]):
-            if any(m.rglob("*.stl")):
-                sections.append((m, l1.name))
+    # Découvre les modules : sous-dossiers de niveau 2 contenant au moins un fichier .stl
+    # Structure attendue : <catégorie>/<module>/*.stl
+    sections = [
+        (m, l1.name)
+        for l1 in sorted(d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE)
+        for m in sorted(d for d in l1.iterdir() if d.is_dir())
+        if any(m.rglob("*.stl"))
+    ]
 
+    # --- Génération du Markdown ---
+
+    # En-tête et sommaire avec liens d'ancrage vers chaque module
     md = ["# 📋 Nomenclature (BOM)\n", "## 📌 Sommaire"]
-    for mod_path, _ in sections:
-        clean_name = mod_path.name.replace('_', ' ').capitalize()
-        anchor = mod_path.name.lower().replace(" ", "-").replace("_", "-")
-        md.append(f"- [{clean_name}](#-{anchor})")
-    
-    c = new_data["COMMON_SETTINGS"]
-    md.extend(["\n---\n", "## ⚙️ Paramètres d'Impression\n", "| Paramètre | Valeur |", "| :--- | :--- |",
-               f"| Couches | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
-               f"| Remplissage | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |", "\n---"])
+    md += [
+        f"- [{m.name.replace('_', ' ').capitalize()}](#-{m.name.lower().replace('_', '-')})"
+        for m, _ in sections
+    ]
 
+    # Tableau des paramètres d'impression communs
+    c = new_data["COMMON_SETTINGS"]
+    md += [
+        "\n---\n", "## ⚙️ Paramètres d'Impression\n",
+        "| Paramètre | Valeur |", "| :--- | :--- |",
+        f"| Couches | {check(c.get('top_solid_layers'))} / {check(c.get('bottom_solid_layers'))} |",
+        f"| Remplissage | {check(c.get('fill_density'))} / {check(c.get('fill_pattern'))} |",
+        "\n---"
+    ]
+
+    # Section détaillée pour chaque module
     for mod, parent in sections:
+        # Crée une archive ZIP du dossier module pour le téléchargement groupé
         safe_name = mod.name.replace(" ", "_")
         shutil.make_archive(str(arc_dir / safe_name), 'zip', root_dir=mod)
         zip_url = f"{raw_url}/archives/{urllib.parse.quote(safe_name)}.zip"
-        
-        md.extend([f"\n## 📦 {mod.name.replace('_', ' ').capitalize()}",
-                   f"Section : `{parent}` | **[🗜️ ZIP]({zip_url})**\n",
-                   "| Vue 3D | Structure | État | Périmètres | Télécharger |",
-                   "| :---: | :--- | :---: | :---: | :---: |"])
 
+        # En-tête de section avec lien ZIP
+        md += [
+            f"\n## 📦 {mod.name.replace('_', ' ').capitalize()}",
+            f"Section : `{parent}` | **[🗜️ ZIP]({zip_url})**\n",
+            "| Vue 3D | Structure | État | Périmètres | Télécharger |",
+            "| :---: | :--- | :---: | :---: | :---: |"
+        ]
+
+        # Parcourt récursivement le module (dossiers et fichiers .stl uniquement)
         for item in sorted(mod.rglob("*")):
-            if not (item.is_dir() or item.suffix.lower() == ".stl"): continue
-            
+            # Ignore les fichiers qui ne sont pas des .stl
+            if item.is_file() and item.suffix.lower() != ".stl":
+                continue
+
             rel_path = item.relative_to(root)
             depth = len(item.relative_to(mod).parts)
-            indent = "&nbsp;" * 4 * depth + "/ " if depth > 0 else ""
-            
+            # Indentation visuelle en HTML pour refléter la profondeur dans l'arborescence
+            indent = "&nbsp;" * 4 * depth + "/ " if depth else ""
+
             if item.suffix.lower() == ".stl":
-                u_path = urllib.parse.quote(str(rel_path.as_posix()))
-                
-                # Astuce : GitHub ne respecte pas target="_blank", 
-                # mais l'utilisation d'un lien standard est plus propre.
-                view_link = f"[🔍 Voir]({blob_url}/{u_path})"
-                download_link = f"[💾]({raw_url}/{u_path})"
-                
+                # Encode le chemin pour l'utiliser dans une URL GitHub
+                u_path = urllib.parse.quote(rel_path.as_posix())
+                # Récupère le nombre de périmètres depuis les données existantes (si défini)
                 old_val = existing_data.get(str(rel_path), {}).get("perimeters")
+                # Persiste la valeur (même None) dans les nouvelles données
                 new_data[str(rel_path)] = {"perimeters": old_val}
-                
-                md.append(f"| {view_link} | {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | {download_link} |")
+                md.append(
+                    f"| [🔍 Voir]({blob_url}/{u_path}) "
+                    f"| {indent}📄 {item.name} "
+                    f"| {'🟢' if old_val else '🔴'} "   # Vert si périmètres définis, rouge sinon
+                    f"| {old_val or '---'} "
+                    f"| [💾]({raw_url}/{u_path}) |"
+                )
             else:
+                # Ligne de dossier intermédiaire (sans liens)
                 md.append(f"| | {indent}📂 **{item.name}** | - | - | - |")
-        
+
+        # Lien de retour au sommaire en fin de section
         md.append("\n[⬆️ Sommaire](#-sommaire)\n\n---")
 
+    # Écriture des fichiers de sortie
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
-    print(f"✅ BOM généré : Traduit et optimisé pour GitHub.")
+    print("✅ BOM généré : Traduit et optimisé pour GitHub.")
+
 
 if __name__ == "__main__":
     generate_bom()
