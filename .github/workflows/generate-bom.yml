@@ -1,15 +1,12 @@
-name: Auto-Generate BOM with 3D Previews
-
+name: Auto-Generate BOM
 on:
   push:
     branches: [ main ]
-
 jobs:
   update-bom:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,19 +18,11 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          pip install pyvista PyQt5
-          sudo apt-get update
-          # On remplace libgl1-mesa-glx par libgl1
-          sudo apt-get install -y libgl1 xvfb libglapi-mesa libosmesa6 libxrender1 libxcursor1 libxinerama1 libxrandr2 libxi6
-
-
       - name: Run BOM Script
-        run: xvfb-run python generate_bom.py 
+        run: python generate_bom.py
 
       - name: Commit and Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "🤖 Auto-update BOM with 3D previews [skip ci]"
-          file_pattern: 'bom.md print_settings.json archives/*.zip previews/*.png'
+          commit_message: "🤖 Auto-update BOM [skip ci]"
+          file_pattern: 'bom.md print_settings.json archives/*.zip'
