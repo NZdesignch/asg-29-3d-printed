@@ -4,7 +4,12 @@ import subprocess
 import urllib.parse
 from pathlib import Path
 
-# --- CONFIGURATION ---
+# --- CONFIGURATION MANUELLE (Plus fiable) ---
+# Remplacez par vos vraies infos GitHub
+GITHUB_USER = "VOTRE_NOM_UTILISATEUR"
+GITHUB_REPO = "VOTRE_NOM_DE_DEPOT"
+BRANCH = "main"  # ou "master"
+
 OUTPUT_FILE = "bom.md"
 SETTINGS_FILE = "print_settings.json"
 EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
@@ -12,20 +17,9 @@ COMMON_KEYS = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_
 
 def slugify(text):
     """Formatage d'ancre GitHub : minuscule, espaces -> tirets, retire ponctuation."""
-    slug = text.lower().replace(" ", "-")
+    # GitHub garde les emojis dans l'ID de l'ancre
+    slug = text.lower().strip().replace(" ", "-")
     return "".join(c for c in slug if c.isalnum() or c in "-_")
-
-def get_repo_info():
-    try:
-        url = subprocess.check_output(["git", "config", "--get", "remote.origin.url"], 
-                                       text=True, stderr=subprocess.DEVNULL).strip()
-        repo = url.replace("https://github.com", "").replace("git@github.com:", "").removesuffix(".git").strip("/")
-        return f"https://raw.githubusercontent.com{repo}/main", f"https://github.com{repo}/blob/main"
-    except:
-        return ".", "."
-
-def check_val(v):
-    return f"**{v}**" if v and str(v).strip() else "🔴 _À définir_"
 
 def generate_bom():
     root = Path(".")
@@ -33,7 +27,10 @@ def generate_bom():
     if arc_dir.exists(): shutil.rmtree(arc_dir)
     arc_dir.mkdir(parents=True, exist_ok=True)
 
-    raw_base, blob_base = get_repo_info()
+    # URLs GitHub construites proprement
+    raw_base = f"https://raw.githubusercontent.com{GITHUB_USER}/{GITHUB_REPO}/{BRANCH}"
+    blob_base = f"https://github.com{GITHUB_USER}/{GITHUB_REPO}/blob/{BRANCH}"
+
     existing_data = {}
     if Path(SETTINGS_FILE).exists():
         try: existing_data = json.loads(Path(SETTINGS_FILE).read_text(encoding="utf-8"))
@@ -42,6 +39,7 @@ def generate_bom():
     new_data = {"COMMON_SETTINGS": {k: existing_data.get("COMMON_SETTINGS", {}).get(k) for k in COMMON_KEYS}}
 
     sections = []
+    # On scanne les dossiers niveau 1 puis niveau 2
     for l1 in sorted(d for d in root.iterdir() if d.is_dir() and d.name not in EXCLUDE):
         for m in sorted(d for d in l1.iterdir() if d.is_dir()):
             if any(m.rglob("*.stl")):
@@ -57,14 +55,15 @@ def generate_bom():
     # --- PARAMÈTRES ---
     c = new_data["COMMON_SETTINGS"]
     md += ["\n---\n", "## ⚙️ Paramètres d'Impression\n", "| Paramètre | Valeur |", "| :--- | :--- |",
-           f"| Couches | {check_val(c.get('top_solid_layers'))} / {check_val(c.get('bottom_solid_layers'))} |",
-           f"| Remplissage | {check_val(c.get('fill_density'))} / {check_val(c.get('fill_pattern'))} |", "\n---"]
+           f"| Couches | {c.get('top_solid_layers') or '🔴'} / {c.get('bottom_solid_layers') or '🔴'} |",
+           f"| Remplissage | {c.get('fill_density') or '🔴'} / {c.get('fill_pattern') or '🔴'} |", "\n---"]
 
     # --- MODULES ---
     for mod, parent in sections:
         display_name = mod.name.replace('_', ' ').capitalize()
         safe_zip_name = mod.name.replace(" ", "_")
         shutil.make_archive(str(arc_dir / safe_zip_name), 'zip', root_dir=mod)
+        
         zip_url = f"{raw_base}/archives/{urllib.parse.quote(safe_zip_name)}.zip"
 
         md += [f"\n## 📦 {display_name}",
@@ -72,12 +71,15 @@ def generate_bom():
                "| Fichier / Structure | État | Périmètres | Actions |",
                "| :--- | :---: | :---: | :---: |"]
 
+        # Parcours hiérarchique
         for item in sorted(mod.rglob("*")):
             if item.is_file() and item.suffix.lower() != ".stl": continue
             
+            rel_path_str = item.relative_to(root).as_posix()
             depth = len(item.relative_to(mod).parts)
             indent = "&nbsp;" * 6 * (depth - 1) + ("┕ " if depth > 1 else "")
-            rel_path_str = item.relative_to(root).as_posix()
+            
+            # Encodage du chemin pour les liens GitHub (safe='/')
             u_path = urllib.parse.quote(rel_path_str, safe='/')
 
             if item.is_dir():
@@ -86,13 +88,17 @@ def generate_bom():
             else:
                 old_val = existing_data.get(rel_path_str, {}).get("perimeters")
                 new_data[rel_path_str] = {"perimeters": old_val}
-                md.append(f"| {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | [🔍 Voir]({blob_base}/{u_path}) / [💾 RAW]({raw_base}/{u_path}) |")
+                
+                view_url = f"{blob_base}/{u_path}"
+                raw_url = f"{raw_base}/{u_path}"
+                
+                md.append(f"| {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | {old_val or '---'} | [🔍 Voir]({view_url}) / [💾 RAW]({raw_url}) |")
 
         md.append(f"\n[⬆️ Retour au sommaire](#{slugify('📌 Sommaire')})\n\n---")
 
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     Path(SETTINGS_FILE).write_text(json.dumps(new_data, indent=4, ensure_ascii=False), encoding="utf-8")
-    print(f"✅ BOM généré avec ancres corrigées.")
+    print(f"✅ BOM généré pour {GITHUB_USER}/{GITHUB_REPO}")
 
 if __name__ == "__main__":
     generate_bom()
