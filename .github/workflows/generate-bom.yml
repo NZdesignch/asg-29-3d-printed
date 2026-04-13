@@ -1,4 +1,4 @@
-name: Generate STL BOM
+name: Generate BOM
 
 on:
   push:
@@ -22,18 +22,19 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies (if needed)
-        run: |
-          pip install --upgrade pip
-
-      - name: Generate STL BOM
+      - name: Run BOM generator
         run: |
           python3 generate_bom.py
 
-      - name: Commit and push changes
+      - name: Commit and push bom.md
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add NOMENCLATURE.md
-          git commit -m "Update STL BOM" || echo "No changes to commit"
-          git push
+
+          if [ -f bom.md ]; then
+            git add bom.md
+            git commit -m "Update BOM" || echo "No changes to commit"
+            git push
+          else
+            echo "bom.md not found"
+          fi
