@@ -1,28 +1,35 @@
-name: Auto-Generate BOM
+name: Generate BOM STL
+
 on:
   push:
-    branches: [ main ]
-jobs:
-  update-bom:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    branches: [main, master]
+  workflow_dispatch:
 
-      - name: Set up Python
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.11"
 
-      - name: Run BOM Script
-        run: python generate_bom.py
+      - name: Generate BOM
+        run: |
+          export REPO_URL="https://github.com/${{ github.repository }}"
+          python generate_bom_md.py
 
-      - name: Commit and Push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "🤖 Auto-update BOM [skip ci]"
-          file_pattern: 'bom.md print_settings.json archives/*.zip'
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add bom.md
+
+          git diff --cached --quiet || git commit -m "📦 update BOM STL"
+
+          git push
