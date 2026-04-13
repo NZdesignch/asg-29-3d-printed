@@ -64,8 +64,8 @@ def generate_md(stl_root: str, output_file: str, user: str, repo: str):
 
 if __name__ == "__main__":
     # Variables d'environnement fournies par GitHub Actions
-    GITHUB_USER = os.environ.get("GITHUB_USER", "unknown-user")
-    GITHUB_REPO = os.environ.get("GITHUB_REPO", "unknown-repo")
+    GITHUB_USER = os.environ.get("GITHUB_USER", "NZdesignch")
+    GITHUB_REPO = os.environ.get("GITHUB_REPO", "asg-29-3d-printed")
 
     # Dossier contenant les STL (relatif à la racine du dépôt)
     STL_FOLDER = "stl"  # adapte si nécessaire
