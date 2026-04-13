@@ -1,8 +1,8 @@
-name: Generate BOM STL
+name: Generate STL BOM
 
 on:
   push:
-    branches: [main, master]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -10,29 +10,30 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      GITHUB_USER: ${{ github.repository_owner }}
+      GITHUB_REPO: ${{ github.event.repository.name }}
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Generate BOM
+      - name: Install dependencies (if needed)
         run: |
-          export REPO_URL="https://github.com/${{ github.repository }}"
-          python generate_bom.py
+          pip install --upgrade pip
 
-      - name: Commit changes
+      - name: Generate STL BOM
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          python3 generate_bom.py
 
-          git add bom.md
-
-          git diff --cached --quiet || git commit -m "📦 update BOM STL"
-
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add NOMENCLATURE.md
+          git commit -m "Update STL BOM" || echo "No changes to commit"
           git push
