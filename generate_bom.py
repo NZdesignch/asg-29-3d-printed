@@ -60,7 +60,7 @@ def generate_md(repo_path: str, stl_root: str, output_file: str):
 
 if __name__ == "__main__":
     # 🔧 Paramètres à adapter
-    GITHUB_REPO = "https://github.com/ton-utilisateur/ton-depot.git"
+    GITHUB_REPO = "https://github.com/NZdesignch/asg-29-3d-printed.git"
     LOCAL_REPO_PATH = "./repo_local"
     STL_FOLDER = "chemin/vers/dossier/stl"  # relatif au dépôt
     OUTPUT_MD = "NOMENCLATURE.md"
