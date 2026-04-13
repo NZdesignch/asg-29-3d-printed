@@ -29,7 +29,7 @@ def generate_bom():
 
     # URLs GitHub construites proprement
     raw_base = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{BRANCH}"
-    blob_base = f"https://github.com{GITHUB_USER}/{GITHUB_REPO}/blob/{BRANCH}"
+    blob_base = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/blob/{BRANCH}"
 
     existing_data = {}
     if Path(SETTINGS_FILE).exists():
