@@ -1,15 +1,16 @@
 import os
 import sys
-import glob
+import subprocess
+import shutil
 from pathlib import Path
-from typing import Dict, List, Tuple
-import argparse
+from typing import Dict, List
 from datetime import datetime
+import argparse
 
 # ============================================
 # CONFIGURATION - À MODIFIER ICI UNE SEULE FOIS
 # ============================================
-REPO_PATH = "./NZdesignch/asg-29-3d-printed"  # ← Chemin vers votre dépôt GitHub
+REPO_URL = "https://github.com/NZdesignch/asg-29-3d-printed"  # ← URL du dépôt GitHub
 OUTPUT_FILE = "bom.md"  # ← Nom du fichier de sortie (optionnel)
 # ============================================
 
@@ -214,19 +215,63 @@ class STLAnalyzer:
         print(f"✅ Nomenclature générée avec succès dans {output_file}")
         return output_file
 
+def clone_repository(repo_url: str, target_dir: str = None) -> str:
+    """
+    Clone un dépôt GitHub.
+    
+    Args:
+        repo_url: URL du dépôt GitHub
+        target_dir: Dossier cible pour le clonage (optionnel)
+    
+    Returns:
+        Chemin du dossier cloné
+    """
+    if not target_dir:
+        # Extraire le nom du dépôt de l'URL
+        repo_name = repo_url.rstrip('/').split('/')[-1]
+        if repo_name.endswith('.git'):
+            repo_name = repo_name[:-4]
+        target_dir = f"./{repo_name}"
+    
+    # Supprimer le dossier s'il existe déjà
+    if os.path.exists(target_dir):
+        print(f"📁 Le dossier {target_dir} existe déjà, suppression...")
+        shutil.rmtree(target_dir)
+    
+    print(f"📥 Clonage du dépôt {repo_url}...")
+    try:
+        subprocess.run(['git', 'clone', repo_url, target_dir], check=True, capture_output=True, text=True)
+        print(f"✅ Dépôt cloné avec succès dans {target_dir}")
+        return target_dir
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Erreur lors du clonage : {e.stderr}")
+        sys.exit(1)
+
 def main():
     # Utilisation des variables globales
-    global REPO_PATH, OUTPUT_FILE
+    global REPO_URL, OUTPUT_FILE
     
-    # Vérifier que le chemin existe
-    if not os.path.exists(REPO_PATH):
-        print(f"❌ Erreur : Le chemin '{REPO_PATH}' n'existe pas.")
-        print("💡 Modifiez la variable REPO_PATH en haut du script.")
-        sys.exit(1)
+    # Vérifier si c'est une URL ou un chemin local
+    if REPO_URL.startswith(('http://', 'https://', 'git@')):
+        # C'est une URL, on clone d'abord
+        print("🚀 Mode URL détecté - Clonage du dépôt...")
+        repo_path = clone_repository(REPO_URL)
+    else:
+        # C'est un chemin local
+        repo_path = REPO_URL
+        if not os.path.exists(repo_path):
+            print(f"❌ Erreur : Le chemin '{repo_path}' n'existe pas.")
+            print("💡 Modifiez la variable REPO_URL en haut du script.")
+            sys.exit(1)
     
     # Créer l'analyseur et exécuter
-    analyzer = STLAnalyzer(REPO_PATH)
+    analyzer = STLAnalyzer(repo_path)
     analyzer.analyze_and_export(OUTPUT_FILE)
+    
+    # Optionnel : supprimer le dépôt cloné après analyse
+    # if REPO_URL.startswith(('http://', 'https://', 'git@')):
+    #     print(f"🧹 Nettoyage - Suppression du dossier {repo_path}...")
+    #     shutil.rmtree(repo_path)
 
 if __name__ == "__main__":
     main()
