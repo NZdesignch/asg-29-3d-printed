@@ -11,6 +11,7 @@ def scan_stl_tree(root: Path, base_url: str):
     for item in sorted(root.iterdir()):
         if item.is_dir():
             subtree = scan_stl_tree(item, base_url)
+            # On n'ajoute le dossier que s'il contient des STL ou sous-dossiers utiles
             if subtree["files"] or any(k != "files" for k in subtree):
                 tree[item.name] = subtree
 
@@ -58,4 +59,20 @@ def generate_bom(stl_folder: str, output_file: str, user: str, repo: str):
     tree = scan_stl_tree(root, base_url)
 
     md = f"# Bill of Materials (STL)\n"
-    md += f"**Dépôt :**
+    md += f"**Dépôt :** https://github.com/{user}/{repo}\n\n"
+    md += tree_to_markdown(tree)
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(md)
+
+    print(f"Fichier '{output_file}' généré avec succès.")
+
+
+if __name__ == "__main__":
+    GITHUB_USER = os.environ.get("GITHUB_USER", "NZdesignch")
+    GITHUB_REPO = os.environ.get("GITHUB_REPO", "asg-29-3d-printed")
+
+    STL_FOLDER = "stl"      # dossier à la racine du dépôt
+    OUTPUT_MD = "bom.md"    # fichier généré à la racine
+
+    generate_bom(STL_FOLDER, OUTPUT_MD, GITHUB_USER, GITHUB_REPO)
