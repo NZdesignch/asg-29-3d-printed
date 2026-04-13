@@ -8,108 +8,75 @@ REPO_URL = os.environ.get("REPO_URL", "")
 
 
 # -----------------------------
-# Collect STL files
+# Collect structure
 # -----------------------------
-def find_stl_files(root_dir: Path):
+def collect_structure(root: Path):
     structure = defaultdict(list)
-    all_paths = []
 
-    for path in root_dir.rglob("*.stl"):
+    for path in root.rglob("*.stl"):
         if path.is_file():
-            relative = path.relative_to(root_dir)
+            rel = path.relative_to(root)
+            top = rel.parts[0] if len(rel.parts) > 1 else "root"
+            structure[top].append(rel)
 
-            top_level = relative.parts[0] if len(relative.parts) > 1 else "root"
-            structure[top_level].append(relative)
-
-            all_paths.append(relative)
-
-    return structure, all_paths
+    return structure
 
 
 # -----------------------------
-# TREE builder
+# Build hierarchical table rows
 # -----------------------------
-def build_tree(paths):
-    tree = {}
+def build_rows(paths):
+    rows = []
 
-    for path in paths:
-        node = tree
-        for part in path.parts[:-1]:
-            node = node.setdefault(part, {})
-        node.setdefault("_files", []).append(path.parts[-1])
+    for p in sorted(paths):
+        parts = p.parts
 
-    return tree
+        # intermediate folders
+        for i in range(len(parts) - 1):
+            indent = "  " * i
+            rows.append({
+                "level": i + 1,
+                "name": indent + parts[i] + "/",
+                "path": ""
+            })
 
+        # file
+        rows.append({
+            "level": len(parts),
+            "name": "  " * (len(parts) - 1) + parts[-1],
+            "path": str(p).replace("\\", "/")
+        })
 
-def render_tree(node, prefix=""):
-    lines = []
-    entries = list(node.items())
-
-    for i, (name, child) in enumerate(entries):
-        is_last = i == len(entries) - 1
-        connector = "└── " if is_last else "├── "
-
-        if name == "_files":
-            for f in child:
-                lines.append(prefix + connector + f)
-            continue
-
-        lines.append(prefix + connector + name)
-        extension = "    " if is_last else "│   "
-        lines.extend(render_tree(child, prefix + extension))
-
-    return lines
+    return rows
 
 
 # -----------------------------
-# GitHub link helpers
+# GitHub link
 # -----------------------------
-def github_link(path: Path):
+def github_link(path):
     if not REPO_URL:
-        return f"`{path.as_posix()}`"
-    return f"[{path.name}]({REPO_URL}/blob/main/stl/{path.as_posix()})"
-
-
-def viewer_link(path: Path):
-    if not REPO_URL:
-        return ""
-    base = REPO_URL.replace("https://github.com", "https://username.github.io")  # à adapter si besoin
-    return f"[👁️ 3D]({base}/docs/viewer.html?file=../stl/{path.as_posix()})"
+        return f"`{path}`"
+    return f"[{path}]({REPO_URL}/blob/main/stl/{path})"
 
 
 # -----------------------------
-# Markdown generation
+# Markdown generator
 # -----------------------------
-def generate_markdown(structure, all_paths):
+def generate_md(structure):
     lines = []
+    lines.append("# 📦 BOM STL\n")
 
-    # Title
-    lines.append("# 📦 Bill of Materials (STL)\n")
-
-    # TOC
-    lines.append("## 📑 Table des matières\n")
-    for folder in sorted(structure.keys()):
-        anchor = folder.lower().replace(" ", "-")
-        lines.append(f"- [{folder}](#{anchor})")
-    lines.append("\n---\n")
-
-    # TREE view
-    lines.append("## 🌳 Arborescence du dossier STL\n")
-    lines.append("```text")
-    lines.extend(render_tree(build_tree(all_paths)))
-    lines.append("```\n")
-
-    # Tables per folder
     for folder, files in sorted(structure.items()):
         lines.append(f"## 📁 {folder}\n")
 
-        lines.append("| Fichier STL | Lien | 3D |")
-        lines.append("|-------------|------|----|")
+        lines.append("| Niveau | Élément | Chemin |")
+        lines.append("|--------|----------|--------|")
 
-        for f in sorted(files):
-            lines.append(
-                f"| {f.name} | {github_link(f)} | {viewer_link(f)} |"
-            )
+        rows = build_rows(files)
+
+        for r in rows:
+            path_display = github_link(r["path"]) if r["path"] else ""
+            lines.append(f"| {r['level']} | {r['name']} | {path_display} |")
 
         lines.append("\n")
 
@@ -123,7 +90,7 @@ if __name__ == "__main__":
     if not STL_DIR.exists():
         raise FileNotFoundError("Dossier ./stl introuvable")
 
-    structure, all_paths = find_stl_files(STL_DIR)
-    generate_markdown(structure, all_paths)
+    structure = collect_structure(STL_DIR)
+    generate_md(structure)
 
-    print("✔ bom.md généré avec succès")
+    print("✔ bom.md généré en tableau multi-niveaux")
