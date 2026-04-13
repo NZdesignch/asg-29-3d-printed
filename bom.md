@@ -1,5 +1,5 @@
 # 📋 Nomenclature (BOM)
-_Généré le 2026-04-13 11:42_
+_Généré le 2026-04-13 11:49_
 
 ## 📌 Sommaire
 - [01 fuselage](#-01-fuselage)
