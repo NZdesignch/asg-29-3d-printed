@@ -1,96 +1,69 @@
 import os
 from pathlib import Path
-from collections import defaultdict
+import subprocess
 
-STL_DIR = Path("stl")
-OUTPUT_FILE = Path("bom.md")
-REPO_URL = os.environ.get("REPO_URL", "")
+def clone_or_update_repo(repo_url: str, local_path: str):
+    local = Path(local_path)
 
-
-# -----------------------------
-# Collect structure
-# -----------------------------
-def collect_structure(root: Path):
-    structure = defaultdict(list)
-
-    for path in root.rglob("*.stl"):
-        if path.is_file():
-            rel = path.relative_to(root)
-            top = rel.parts[0] if len(rel.parts) > 1 else "root"
-            structure[top].append(rel)
-
-    return structure
+    if not local.exists():
+        print(f"Clonage du dépôt dans {local_path}")
+        subprocess.run(["git", "clone", repo_url, local_path], check=True)
+    else:
+        print(f"Mise à jour du dépôt dans {local_path}")
+        subprocess.run(["git", "-C", local_path, "pull"], check=True)
 
 
-# -----------------------------
-# Build hierarchical table rows
-# -----------------------------
-def build_rows(paths):
-    rows = []
+def build_tree(root: Path):
+    """
+    Construit une structure hiérarchique :
+    { dossier: { sous_dossier: {...}, "files": [liste STL] } }
+    """
+    tree = {"files": []}
 
-    for p in sorted(paths):
-        parts = p.parts
+    for item in sorted(root.iterdir()):
+        if item.is_dir():
+            tree[item.name] = build_tree(item)
+        elif item.suffix.lower() == ".stl":
+            tree["files"].append(item.name)
 
-        # intermediate folders
-        for i in range(len(parts) - 1):
-            indent = "  " * i
-            rows.append({
-                "level": i + 1,
-                "name": indent + parts[i] + "/",
-                "path": ""
-            })
-
-        # file
-        rows.append({
-            "level": len(parts),
-            "name": "  " * (len(parts) - 1) + parts[-1],
-            "path": str(p).replace("\\", "/")
-        })
-
-    return rows
+    return tree
 
 
-# -----------------------------
-# GitHub link
-# -----------------------------
-def github_link(path):
-    if not REPO_URL:
-        return f"`{path}`"
-    return f"[{path}]({REPO_URL}/blob/main/stl/{path})"
+def tree_to_markdown(tree: dict, level: int = 0):
+    md = ""
+    indent = "  " * level
+
+    # Fichiers STL du dossier courant
+    for f in tree.get("files", []):
+        md += f"{indent}- **{f}**\n"
+
+    # Sous-dossiers
+    for key, value in tree.items():
+        if key == "files":
+            continue
+        md += f"{indent}- {key}/\n"
+        md += tree_to_markdown(value, level + 1)
+
+    return md
 
 
-# -----------------------------
-# Markdown generator
-# -----------------------------
-def generate_md(structure):
-    lines = []
-    lines.append("# 📦 BOM STL\n")
+def generate_md(repo_path: str, stl_root: str, output_file: str):
+    root = Path(repo_path) / stl_root
+    tree = build_tree(root)
+    md_content = "# Nomenclature des fichiers STL\n\n" + tree_to_markdown(tree)
 
-    for folder, files in sorted(structure.items()):
-        lines.append(f"## 📁 {folder}\n")
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(md_content)
 
-        lines.append("| Niveau | Élément | Chemin |")
-        lines.append("|--------|----------|--------|")
-
-        rows = build_rows(files)
-
-        for r in rows:
-            path_display = github_link(r["path"]) if r["path"] else ""
-            lines.append(f"| {r['level']} | {r['name']} | {path_display} |")
-
-        lines.append("\n")
-
-    OUTPUT_FILE.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Nomenclature générée dans {output_file}")
 
 
-# -----------------------------
-# Main
-# -----------------------------
 if __name__ == "__main__":
-    if not STL_DIR.exists():
-        raise FileNotFoundError("Dossier ./stl introuvable")
+    # 🔧 Paramètres à adapter
+    GITHUB_REPO = "https://github.com/ton-utilisateur/ton-depot.git"
+    LOCAL_REPO_PATH = "./repo_local"
+    STL_FOLDER = "chemin/vers/dossier/stl"  # relatif au dépôt
+    OUTPUT_MD = "NOMENCLATURE.md"
 
-    structure = collect_structure(STL_DIR)
-    generate_md(structure)
-
-    print("✔ bom.md généré en tableau multi-niveaux")
+    clone_or_update_repo(GITHUB_REPO, LOCAL_REPO_PATH)
+    generate_md(LOCAL_REPO_PATH, STL_FOLDER, OUTPUT_MD)
