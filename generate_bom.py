@@ -5,8 +5,8 @@ from pathlib import Path
 from datetime import datetime
 
 # --- CONFIGURATION ---
-GITHUB_USER = "VOTRE_NOM_UTILISATEUR"
-GITHUB_REPO = "VOTRE_NOM_DE_DEPOT"
+GITHUB_USER = "NZdesignch"
+GITHUB_REPO = "asg-29-3d-printed"
 BRANCH = "main"
 
 OUTPUT_FILE = "bom.md"
