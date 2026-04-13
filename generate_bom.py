@@ -1,18 +1,16 @@
 import os
 from pathlib import Path
 
-IGNORED_DIRS = {".git", ".github", "__pycache__", ".vscode"}
-
-def build_tree(root: Path, base_url: str):
+def scan_stl_tree(root: Path, base_url: str):
+    """
+    Parcourt récursivement tous les sous-dossiers du dossier stl/
+    et construit une structure hiérarchique.
+    """
     tree = {"files": []}
 
     for item in sorted(root.iterdir()):
-        if item.name in IGNORED_DIRS:
-            continue
-
         if item.is_dir():
-            subtree = build_tree(item, base_url)
-            # On n'ajoute le dossier que s'il contient des STL ou sous-dossiers utiles
+            subtree = scan_stl_tree(item, base_url)
             if subtree["files"] or any(k != "files" for k in subtree):
                 tree[item.name] = subtree
 
@@ -27,12 +25,17 @@ def build_tree(root: Path, base_url: str):
 
 
 def tree_to_markdown(tree: dict, level: int = 0):
+    """
+    Convertit la structure hiérarchique en Markdown multi-niveaux.
+    """
     md = ""
     indent = "  " * level
 
+    # Fichiers STL
     for f in tree.get("files", []):
         md += f"{indent}- **[{f['name']}]({f['url']})**\n"
 
+    # Sous-dossiers
     for key, value in tree.items():
         if key == "files":
             continue
@@ -42,28 +45,17 @@ def tree_to_markdown(tree: dict, level: int = 0):
     return md
 
 
-def generate_md(root_folder: str, output_file: str, user: str, repo: str):
-    root = Path(root_folder)
-    base_url = f"https://github.com/{user}/{repo}/blob/main"
+def generate_bom(stl_folder: str, output_file: str, user: str, repo: str):
+    """
+    Génère bom.md à partir du dossier stl/.
+    """
+    root = Path(stl_folder)
+    if not root.exists():
+        raise FileNotFoundError(f"Le dossier '{stl_folder}' est introuvable.")
 
-    tree = build_tree(root, base_url)
+    base_url = f"https://github.com/{user}/{repo}/blob/main/{stl_folder}"
 
-    md = f"# Nomenclature des fichiers STL\n"
-    md += f"**Dépôt :** https://github.com/{user}/{repo}\n\n"
-    md += tree_to_markdown(tree)
+    tree = scan_stl_tree(root, base_url)
 
-    # Toujours créer le fichier, même vide
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(md)
-
-    print(f"NOMENCLATURE.md généré avec succès.")
-
-
-if __name__ == "__main__":
-    GITHUB_USER = os.environ.get("GITHUB_USER", "unknown-user")
-    GITHUB_REPO = os.environ.get("GITHUB_REPO", "unknown-repo")
-
-    ROOT_FOLDER = "."          # On scanne tout le dépôt
-    OUTPUT_MD = "NOMENCLATURE.md"
-
-    generate_md(ROOT_FOLDER, OUTPUT_MD, GITHUB_USER, GITHUB_REPO)
+    md = f"# Bill of Materials (STL)\n"
+    md += f"**Dépôt :**
