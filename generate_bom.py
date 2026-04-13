@@ -18,8 +18,8 @@ COMMON_KEYS = ["top_solid_layers", "bottom_solid_layers", "fill_density", "fill_
 
 # --- UTILITAIRES ---
 def slugify(text: str) -> str:
-    slug = text.lower().strip().replace(" ", "-")
-    return "".join(c for c in slug if c.isalnum() or c in "-_")
+    text = text.lower().strip().replace(" ", "-")
+    return "".join(c for c in text if c.isalnum() or c in "-_")
 
 
 def load_json(path: Path) -> dict:
@@ -37,14 +37,19 @@ def save_json(path: Path, data: dict):
 
 
 def contains_stl(folder: Path) -> bool:
-    return any(f.suffix.lower() == ".stl" for f in folder.rglob("*") if f.is_file())
+    return any(folder.rglob("*.stl"))
 
 
 def make_zip(src: Path, dest: Path):
     try:
         shutil.make_archive(str(dest), 'zip', root_dir=src)
+        print(f"📦 ZIP créé: {dest}.zip")
     except Exception as e:
-        print(f"❌ Erreur ZIP {src}: {e}")
+        print(f"❌ ZIP échoué: {src} → {dest}.zip | {e}")
+
+
+def file_size_kb(path: Path) -> float:
+    return round(path.stat().st_size / 1024, 1)
 
 
 # --- LOGIQUE PRINCIPALE ---
@@ -52,27 +57,26 @@ def generate_bom():
     root = Path(".")
     arc_dir = root / "archives"
 
-    # Reset dossier archives
+    # Reset archives
     if arc_dir.exists():
         shutil.rmtree(arc_dir)
     arc_dir.mkdir(parents=True, exist_ok=True)
 
-    # URLs GitHub (FIX IMPORTANT ici ✅)
     raw_base = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{BRANCH}"
     blob_base = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/blob/{BRANCH}"
 
     existing_data = load_json(Path(SETTINGS_FILE))
 
-    new_data = {
-        "COMMON_SETTINGS": {
-            k: existing_data.get("COMMON_SETTINGS", {}).get(k)
-            for k in COMMON_KEYS
-        }
+    # ✅ FIX: ne pas écraser les anciennes données
+    new_data = existing_data.copy()
+    new_data["COMMON_SETTINGS"] = {
+        k: existing_data.get("COMMON_SETTINGS", {}).get(k)
+        for k in COMMON_KEYS
     }
 
     sections = []
 
-    # Scan dossiers (niveau 1 + 2)
+    # Scan dossiers
     for l1 in sorted(p for p in root.iterdir() if p.is_dir() and p.name not in EXCLUDE):
         for l2 in sorted(p for p in l1.iterdir() if p.is_dir()):
             if contains_stl(l2):
@@ -87,7 +91,7 @@ def generate_bom():
     md.append("## 📌 Sommaire")
     for mod, _ in sections:
         name = mod.name.replace("_", " ").capitalize()
-        md.append(f"- [{name}](#{slugify('📦 ' + name)})")
+        md.append(f"- [{name}](#{slugify(name)})")
 
     # --- PARAMÈTRES ---
     c = new_data["COMMON_SETTINGS"]
@@ -108,16 +112,22 @@ def generate_bom():
 
         make_zip(mod, arc_dir / zip_name)
 
-        zip_url = f"{raw_base}/archives/{urllib.parse.quote(zip_name)}.zip"
+        # ✅ ZIP local (fonctionne toujours)
+        zip_url = f"./archives/{urllib.parse.quote(zip_name)}.zip"
 
         md += [
-            f"\n## 📦 {name}",
+            f"\n## {name}",
             f"Section : `{parent}` | **[🗜️ ZIP]({zip_url})**\n",
-            "| Fichier / Structure | État | Périmètres | Actions |",
-            "| :--- | :---: | :---: | :---: |"
+            "| Fichier / Structure | État | Périmètres | Taille | Actions |",
+            "| :--- | :---: | :---: | :---: | :--- |"
         ]
 
-        for item in sorted(mod.rglob("*")):
+        items = sorted(
+            mod.rglob("*"),
+            key=lambda x: (x.is_file(), x.name.lower())
+        )
+
+        for item in items:
             if item.is_file() and item.suffix.lower() != ".stl":
                 continue
 
@@ -129,28 +139,37 @@ def generate_bom():
 
             if item.is_dir():
                 if contains_stl(item):
-                    md.append(f"| {indent}📂 **{item.name}** | - | - | - |")
+                    md.append(f"| {indent}📂 **{item.name}** | - | - | - | - |")
                 continue
 
-            # Fichier STL
+            # --- STL ---
             old_val = existing_data.get(rel_path, {}).get("perimeters")
-            new_data[rel_path] = {"perimeters": old_val}
+
+            # ✅ init safe
+            if rel_path not in new_data:
+                new_data[rel_path] = {"perimeters": old_val or None}
+
+            size = file_size_kb(item)
 
             view_url = f"{blob_base}/{encoded_path}"
             raw_url = f"{raw_base}/{encoded_path}"
+            viewer_url = f"https://3dviewer.net/#model={raw_url}"
 
             md.append(
-                f"| {indent}📄 {item.name} | {'🟢' if old_val else '🔴'} | "
-                f"{old_val or '---'} | [🔍 Voir]({view_url}) / [💾 RAW]({raw_url}) |"
+                f"| {indent}📄 {item.name} | "
+                f"{'🟢' if old_val else '🔴'} | "
+                f"{old_val or '---'} | "
+                f"{size} KB | "
+                f"[🔍]({view_url}) [💾]({raw_url}) [🧊]({viewer_url}) |"
             )
 
-        md.append(f"\n[⬆️ Retour au sommaire](#{slugify('📌 Sommaire')})\n\n---")
+        md.append(f"\n[⬆️ Retour au sommaire](#{slugify('sommaire')})\n\n---")
 
-    # --- SAUVEGARDE ---
+    # --- SAVE ---
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     save_json(Path(SETTINGS_FILE), new_data)
 
-    print(f"✅ BOM généré pour {GITHUB_USER}/{GITHUB_REPO}")
+    print(f"✅ BOM généré avec succès pour {GITHUB_USER}/{GITHUB_REPO}")
 
 
 # --- EXECUTION ---
