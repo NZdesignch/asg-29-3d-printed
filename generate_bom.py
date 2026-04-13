@@ -2,6 +2,14 @@ import os
 from pathlib import Path
 
 def build_tree(root: Path):
+    """
+    Construit une structure hiérarchique représentant les dossiers et fichiers STL.
+    Format :
+    {
+        "files": ["piece1.stl", "piece2.stl"],
+        "subfolder": { ... }
+    }
+    """
     tree = {"files": []}
 
     for item in sorted(root.iterdir()):
@@ -14,12 +22,17 @@ def build_tree(root: Path):
 
 
 def tree_to_markdown(tree: dict, level: int = 0):
+    """
+    Convertit la structure hiérarchique en Markdown multi-niveaux.
+    """
     md = ""
     indent = "  " * level
 
+    # Fichiers STL du dossier courant
     for f in tree.get("files", []):
         md += f"{indent}- **{f}**\n"
 
+    # Sous-dossiers
     for key, value in tree.items():
         if key == "files":
             continue
@@ -30,7 +43,13 @@ def tree_to_markdown(tree: dict, level: int = 0):
 
 
 def generate_md(stl_root: str, output_file: str, user: str, repo: str):
+    """
+    Génère le fichier Markdown final.
+    """
     root = Path(stl_root)
+    if not root.exists():
+        raise FileNotFoundError(f"Le dossier STL '{stl_root}' est introuvable.")
+
     tree = build_tree(root)
 
     md = f"# Nomenclature des fichiers STL\n"
@@ -44,5 +63,12 @@ def generate_md(stl_root: str, output_file: str, user: str, repo: str):
 
 
 if __name__ == "__main__":
-    # Variables d'environnement
-    GITHUB_USER = os.environ.get
+    # Variables d'environnement fournies par GitHub Actions
+    GITHUB_USER = os.environ.get("GITHUB_USER", "unknown-user")
+    GITHUB_REPO = os.environ.get("GITHUB_REPO", "unknown-repo")
+
+    # Dossier contenant les STL (relatif à la racine du dépôt)
+    STL_FOLDER = "STL"  # adapte si nécessaire
+    OUTPUT_MD = "NOMENCLATURE.md"
+
+    generate_md(STL_FOLDER, OUTPUT_MD, GITHUB_USER, GITHUB_REPO)
