@@ -1,107 +1,119 @@
-import json
-import urllib.parse
+import os
 from pathlib import Path
-from datetime import datetime
+from collections import defaultdict
 
-# --- CONFIG ---
-GITHUB_USER = "NZdesignch"
-GITHUB_REPO = "asg-29-3d-printed"
-BRANCH = "main"
-
-OUTPUT_FILE = "bom.md"
-SETTINGS_FILE = "print_settings.json"
-
-EXCLUDE = {'.git', '.github', '__pycache__', 'venv', '.vscode', 'archives', 'previews'}
+REPO_URL = os.environ.get("REPO_URL", "")
 
 
-# --- UTILS ---
-def slugify(text):
-    return "".join(c for c in text.lower().replace(" ", "-") if c.isalnum() or c in "-_")
+# -----------------------------
+# Collecte des fichiers STL
+# -----------------------------
+def find_stl_files(root_dir):
+    root_dir = Path(root_dir)
+    structure = defaultdict(list)
+
+    all_paths = []
+
+    for path in root_dir.rglob("*.stl"):
+        if path.is_file():
+            relative = path.relative_to(root_dir)
+            structure[relative.parts[0] if len(relative.parts) > 1 else "root"].append(relative)
+            all_paths.append(relative)
+
+    return structure, all_paths
 
 
-def contains_stl(folder: Path):
-    return any(folder.rglob("*.stl"))
+# -----------------------------
+# Construction arbre TREE
+# -----------------------------
+def build_tree(paths):
+    tree = {}
+
+    for path in paths:
+        parts = path.parts
+        node = tree
+
+        for part in parts[:-1]:
+            node = node.setdefault(part, {})
+
+        node.setdefault("_files", []).append(parts[-1])
+
+    return tree
 
 
-def load_json():
-    try:
-        return json.loads(Path(SETTINGS_FILE).read_text(encoding="utf-8"))
-    except:
-        return {}
+def render_tree(node, prefix=""):
+    lines = []
+    entries = list(node.items())
 
+    for i, (name, child) in enumerate(entries):
+        is_last = i == len(entries) - 1
 
-def save_json(data):
-    Path(SETTINGS_FILE).write_text(json.dumps(data, indent=4, ensure_ascii=False), encoding="utf-8")
+        connector = "└── " if is_last else "├── "
 
-
-# --- WALK HIÉRARCHIQUE PROPRE (IMPORTANT) ---
-def walk(folder: Path, root: Path, existing, new_data, md, level=0):
-    indent = "&nbsp;" * (level * 4)
-
-    items = sorted(folder.iterdir(), key=lambda x: (x.is_file(), x.name.lower()))
-
-    for item in items:
-        if any(p in EXCLUDE for p in item.parts):
+        if name == "_files":
+            for f in child:
+                lines.append(prefix + connector + f)
             continue
 
-        rel = item.relative_to(root).as_posix()
+        lines.append(prefix + connector + name)
 
-        if item.is_dir():
-            if not contains_stl(item):
-                continue
+        extension = "    " if is_last else "│   "
+        lines.extend(render_tree(child, prefix + extension))
 
-            md.append(f"| {indent}📂 **{item.name}** | - | - | - |")
-
-            walk(item, root, existing, new_data, md, level + 1)
-
-        elif item.suffix.lower() == ".stl":
-
-            old = existing.get(rel, {}).get("perimeters")
-
-            new_data[rel] = {"perimeters": old}
-
-            view = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/blob/{BRANCH}/{urllib.parse.quote(rel, safe='/')}"
-            raw = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{BRANCH}/{urllib.parse.quote(rel, safe='/')}"
-
-            md.append(
-                f"| {indent}📄 {item.name} | {'🟢' if old else '🔴'} | "
-                f"{old or '---'} | [🔍]({view}) / [💾]({raw}) |"
-            )
+    return lines
 
 
-# --- MAIN ---
-def generate_bom():
-    root = Path(".")
-
-    existing = load_json()
-    new_data = existing.copy()
-
-    md = []
-    md.append("# 📋 Nomenclature (BOM)")
-    md.append(f"_Généré le {datetime.now().strftime('%Y-%m-%d %H:%M')}_\n")
-
-    md += [
-        "| Fichier / Structure | État | Périmètres | Actions |",
-        "| :--- | :---: | :---: | :--- |"
-    ]
-
-    # scan racines
-    for folder in sorted(root.iterdir()):
-        if not folder.is_dir():
-            continue
-        if folder.name in EXCLUDE:
-            continue
-        if not contains_stl(folder):
-            continue
-
-        md.append(f"| 📦 **{folder.name}** | - | - | - |")
-        walk(folder, root, existing, new_data, md, 1)
-
-    Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
-    save_json(new_data)
-
-    print("✅ BOM réparé (tableaux conservés)")
+# -----------------------------
+# Markdown generation
+# -----------------------------
+def to_github_link(path: Path):
+    if not REPO_URL:
+        return f"`{path.as_posix()}`"
+    return f"[{path.name}]({REPO_URL}/blob/main/{path.as_posix()})"
 
 
+def generate_markdown(structure, all_paths, output_file):
+    lines = []
+
+    # Title
+    lines.append("# 📦 Structure des fichiers STL\n")
+
+    # Table des matières
+    lines.append("## 📑 Table des matières\n")
+    for folder in sorted(structure.keys()):
+        anchor = folder.lower().replace(" ", "-")
+        lines.append(f"- [{folder}](#{anchor})")
+    lines.append("\n---\n")
+
+    # TREE view
+    lines.append("## 🌳 Arborescence du projet\n")
+    lines.append("```text")
+    lines.extend(render_tree(build_tree(all_paths)))
+    lines.append("```\n")
+
+    # Sections par dossier
+    for folder, files in sorted(structure.items()):
+        lines.append(f"## 📁 {folder}\n")
+
+        lines.append("| Fichier STL | Chemin |")
+        lines.append("|-------------|--------|")
+
+        for f in sorted(files):
+            lines.append(f"| {f.name} | {to_github_link(f)} |")
+
+        lines.append("\n")
+
+    Path(output_file).write_text("\n".join(lines), encoding="utf-8")
+
+
+# -----------------------------
+# Main
+# -----------------------------
 if __name__ == "__main__":
-    generate_bom()
+    repo_root = "."
+    output_file = "STL_STRUCTURE.md"
+
+    structure, all_paths = find_stl_files(repo_root)
+    generate_markdown(structure, all_paths, output_file)
+
+    print(f"Generated {output_file}")
