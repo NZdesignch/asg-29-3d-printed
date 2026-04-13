@@ -52,6 +52,31 @@ def file_size_kb(path: Path) -> float:
     return round(path.stat().st_size / 1024, 1)
 
 
+# --- 🔥 NOUVELLE LOGIQUE MULTI-NIVEAUX ---
+def find_modules(root: Path):
+    """Retourne uniquement les dossiers 'modules' contenant des STL (sans doublons)"""
+    candidates = []
+
+    for folder in root.rglob("*"):
+        if not folder.is_dir():
+            continue
+
+        # Exclusions
+        if any(part in EXCLUDE for part in folder.parts):
+            continue
+
+        if contains_stl(folder):
+            candidates.append(folder)
+
+    # ✅ garder seulement les dossiers les plus profonds
+    modules = []
+    for f in candidates:
+        if not any(parent in candidates for parent in f.parents):
+            modules.append(f)
+
+    return sorted(modules)
+
+
 # --- LOGIQUE PRINCIPALE ---
 def generate_bom():
     root = Path(".")
@@ -67,20 +92,20 @@ def generate_bom():
 
     existing_data = load_json(Path(SETTINGS_FILE))
 
-    # ✅ FIX: ne pas écraser les anciennes données
+    # Ne pas écraser les données existantes
     new_data = existing_data.copy()
     new_data["COMMON_SETTINGS"] = {
         k: existing_data.get("COMMON_SETTINGS", {}).get(k)
         for k in COMMON_KEYS
     }
 
-    sections = []
+    # 🔥 modules dynamiques
+    modules = find_modules(root)
 
-    # Scan dossiers
-    for l1 in sorted(p for p in root.iterdir() if p.is_dir() and p.name not in EXCLUDE):
-        for l2 in sorted(p for p in l1.iterdir() if p.is_dir()):
-            if contains_stl(l2):
-                sections.append((l2, l1.name))
+    sections = []
+    for mod in modules:
+        parent = mod.parent.name
+        sections.append((mod, parent))
 
     # --- MARKDOWN ---
     md = []
@@ -112,7 +137,6 @@ def generate_bom():
 
         make_zip(mod, arc_dir / zip_name)
 
-        # ✅ ZIP local (fonctionne toujours)
         zip_url = f"./archives/{urllib.parse.quote(zip_name)}.zip"
 
         md += [
@@ -142,10 +166,9 @@ def generate_bom():
                     md.append(f"| {indent}📂 **{item.name}** | - | - | - | - |")
                 continue
 
-            # --- STL ---
+            # STL
             old_val = existing_data.get(rel_path, {}).get("perimeters")
 
-            # ✅ init safe
             if rel_path not in new_data:
                 new_data[rel_path] = {"perimeters": old_val or None}
 
@@ -169,7 +192,7 @@ def generate_bom():
     Path(OUTPUT_FILE).write_text("\n".join(md), encoding="utf-8")
     save_json(Path(SETTINGS_FILE), new_data)
 
-    print(f"✅ BOM généré avec succès pour {GITHUB_USER}/{GITHUB_REPO}")
+    print(f"✅ BOM généré avec structure multi-niveaux correcte")
 
 
 # --- EXECUTION ---
