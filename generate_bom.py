@@ -28,7 +28,7 @@ def generate_bom():
     arc_dir.mkdir(parents=True, exist_ok=True)
 
     # URLs GitHub construites proprement
-    raw_base = f"https://raw.githubusercontent.com{GITHUB_USER}/{GITHUB_REPO}/{BRANCH}"
+    raw_base = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{BRANCH}"
     blob_base = f"https://github.com{GITHUB_USER}/{GITHUB_REPO}/blob/{BRANCH}"
 
     existing_data = {}
