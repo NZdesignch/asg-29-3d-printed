@@ -11,7 +11,6 @@ def scan_stl_tree(root: Path, base_url: str):
     for item in sorted(root.iterdir()):
         if item.is_dir():
             subtree = scan_stl_tree(item, base_url)
-            # On n'ajoute le dossier que s'il contient des STL ou sous-dossiers utiles
             if subtree["files"] or any(k != "files" for k in subtree):
                 tree[item.name] = subtree
 
@@ -25,25 +24,25 @@ def scan_stl_tree(root: Path, base_url: str):
     return tree
 
 
-def tree_to_markdown(tree: dict, level: int = 0):
+def tree_to_table(tree: dict, parent: str = ""):
     """
-    Convertit la structure hiérarchique en Markdown multi-niveaux.
+    Convertit la structure hiérarchique en lignes de tableau Markdown.
     """
-    md = ""
-    indent = "  " * level
+    rows = []
 
     # Fichiers STL
     for f in tree.get("files", []):
-        md += f"{indent}- **[{f['name']}]({f['url']})**\n"
+        rows.append(f"| 🧩 Fichier | {parent} | **[{f['name']}]({f['url']})** |")
 
     # Sous-dossiers
     for key, value in tree.items():
         if key == "files":
             continue
-        md += f"{indent}- {key}/\n"
-        md += tree_to_markdown(value, level + 1)
+        folder_path = f"{parent}/{key}" if parent else key
+        rows.append(f"| 📁 Dossier | {parent if parent else '/'} | **{key}/** |")
+        rows.extend(tree_to_table(value, folder_path))
 
-    return md
+    return rows
 
 
 def generate_bom(stl_folder: str, output_file: str, user: str, repo: str):
@@ -60,19 +59,6 @@ def generate_bom(stl_folder: str, output_file: str, user: str, repo: str):
 
     md = f"# Bill of Materials (STL)\n"
     md += f"**Dépôt :** https://github.com/{user}/{repo}\n\n"
-    md += tree_to_markdown(tree)
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(md)
-
-    print(f"Fichier '{output_file}' généré avec succès.")
-
-
-if __name__ == "__main__":
-    GITHUB_USER = os.environ.get("GITHUB_USER", "NZdesignch")
-    GITHUB_REPO = os.environ.get("GITHUB_REPO", "asg-29-3d-printed")
-
-    STL_FOLDER = "stl"      # dossier à la racine du dépôt
-    OUTPUT_MD = "bom.md"    # fichier généré à la racine
-
-    generate_bom(STL_FOLDER, OUTPUT_MD, GITHUB_USER, GITHUB_REPO)
+    md += "## 📦 Nomenclature complète\n\n"
+    md += "| Type |
