@@ -68,7 +68,7 @@ if __name__ == "__main__":
     GITHUB_REPO = os.environ.get("GITHUB_REPO", "unknown-repo")
 
     # Dossier contenant les STL (relatif à la racine du dépôt)
-    STL_FOLDER = "STL"  # adapte si nécessaire
-    OUTPUT_MD = "NOMENCLATURE.md"
+    STL_FOLDER = "stl"  # adapte si nécessaire
+    OUTPUT_MD = "bom.md"
 
     generate_md(STL_FOLDER, OUTPUT_MD, GITHUB_USER, GITHUB_REPO)
