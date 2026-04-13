@@ -24,7 +24,7 @@ jobs:
       - name: Generate BOM
         run: |
           export REPO_URL="https://github.com/${{ github.repository }}"
-          python generate_bom_md.py
+          python generate_bom.py
 
       - name: Commit changes
         run: |
