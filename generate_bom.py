@@ -6,8 +6,8 @@ from pathlib import Path
 
 # --- CONFIGURATION MANUELLE (Plus fiable) ---
 # Remplacez par vos vraies infos GitHub
-GITHUB_USER = "VOTRE_NOM_UTILISATEUR"
-GITHUB_REPO = "VOTRE_NOM_DE_DEPOT"
+GITHUB_USER = "NZdesignch"
+GITHUB_REPO = "asg-29-3d-printed"
 BRANCH = "main"  # ou "master"
 
 OUTPUT_FILE = "bom.md"
