@@ -1,35 +1,57 @@
-# 📋 Nomenclature (BOM)
-_Généré le 2026-04-13 12:11_
+# 📦 Bill of Materials (STL)
 
-## ⚙️ Paramètres d'Impression
-| Paramètre | Valeur |
-| :--- | :--- |
-| Couches | 3 / 3 |
-| Remplissage | 4 % / Grille |
+## 📑 Table des matières
+
+- [01 fuselage](#01-fuselage)
+- [04 aile gauche](#04-aile-gauche)
 
 ---
 
-## 📂 stl
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **01 fuselage** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 Section 04.stl | 🔴 | --- | 1585.5 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/01%20fuselage/Section%2004.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/01%20fuselage/Section%2004.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/01%20fuselage/Section%2004.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **04 aile gauche** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **01 sections** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 Section 01.stl | 🔴 | --- | 676.8 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/01%20sections/Section%2001.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/01%20sections/Section%2001.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/01%20sections/Section%2001.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 section 02.stl | 🔴 | --- | 676.8 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/01%20sections/section%2002.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/01%20sections/section%2002.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/01%20sections/section%2002.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 section 03.stl | 🔴 | --- | 676.8 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/01%20sections/section%2003.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/01%20sections/section%2003.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/01%20sections/section%2003.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **02 nervures** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 Nervure 01.stl | 🔴 | --- | 328.0 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2001.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2001.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2001.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 Nervure 02.stl | 🔴 | --- | 328.0 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2002.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2002.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2002.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 Nervure 03.stl | 🔴 | --- | 328.0 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2003.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2003.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2003.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **03 volet** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **01 sections** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 section 01.stl | 🔴 | --- | 676.8 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/03%20volet/01%20sections/section%2001.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/03%20volet/01%20sections/section%2001.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/03%20volet/01%20sections/section%2001.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **02 nervures** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 nervure 01.stl | 🔴 | --- | 676.8 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **04 aileron** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **01 sections** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 section 01.stl | 🔴 | --- | 676.8 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl) |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📂 **02 nervures** | - | - | - | - |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📄 nervure 01.stl | 🔴 | --- | 676.8 KB | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl) [💾](https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl) [🧊](https://3dviewer.net/#model=https://raw.githubusercontent.com/NZdesignch/asg-29-3d-printed/main/stl/04%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl) |
+## 🌳 Arborescence du dossier STL
 
----
+```text
+├── 04 aile gauche
+│   ├── 01 sections
+│   │   └── section 03.stl
+│   │   └── Section 01.stl
+│   │   └── section 02.stl
+│   ├── 04 aileron
+│   │   ├── 01 sections
+│   │   │   └── section 01.stl
+│   │   └── 02 nervures
+│   │       └── nervure 01.stl
+│   ├── 02 nervures
+│   │   └── Nervure 01.stl
+│   │   └── Nervure 03.stl
+│   │   └── Nervure 02.stl
+│   └── 03 volet
+│       ├── 01 sections
+│       │   └── section 01.stl
+│       └── 02 nervures
+│           └── nervure 01.stl
+└── 01 fuselage
+    └── Section 04.stl
+```
+
+## 📁 01 fuselage
+
+| Fichier STL | Lien | 3D |
+|-------------|------|----|
+| Section 04.stl | [Section 04.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/01 fuselage/Section 04.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/01 fuselage/Section 04.stl) |
+
+
+## 📁 04 aile gauche
+
+| Fichier STL | Lien | 3D |
+|-------------|------|----|
+| Section 01.stl | [Section 01.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/01 sections/Section 01.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/01 sections/Section 01.stl) |
+| section 02.stl | [section 02.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/01 sections/section 02.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/01 sections/section 02.stl) |
+| section 03.stl | [section 03.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/01 sections/section 03.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/01 sections/section 03.stl) |
+| Nervure 01.stl | [Nervure 01.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/02 nervures/Nervure 01.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/02 nervures/Nervure 01.stl) |
+| Nervure 02.stl | [Nervure 02.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/02 nervures/Nervure 02.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/02 nervures/Nervure 02.stl) |
+| Nervure 03.stl | [Nervure 03.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/02 nervures/Nervure 03.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/02 nervures/Nervure 03.stl) |
+| section 01.stl | [section 01.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/03 volet/01 sections/section 01.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/03 volet/01 sections/section 01.stl) |
+| nervure 01.stl | [nervure 01.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/03 volet/02 nervures/nervure 01.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/03 volet/02 nervures/nervure 01.stl) |
+| section 01.stl | [section 01.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/04 aileron/01 sections/section 01.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/04 aileron/01 sections/section 01.stl) |
+| nervure 01.stl | [nervure 01.stl](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04 aile gauche/04 aileron/02 nervures/nervure 01.stl) | [👁️ 3D](https://username.github.io/NZdesignch/asg-29-3d-printed/docs/viewer.html?file=../stl/04 aile gauche/04 aileron/02 nervures/nervure 01.stl) |
+
