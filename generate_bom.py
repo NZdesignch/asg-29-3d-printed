@@ -1,74 +1,40 @@
 from pathlib import Path
-from urllib.parse import quote
 import json
 
 # =====================
-# Configuration GitHub
-# =====================
-GITHUB_USER = "NZdesignch"
-GITHUB_REPO = "asg-29-3d-printed"
-GITHUB_BRANCH = "main"
-
-# =====================
-# Configuration projet
+# Configuration
 # =====================
 STL_DIR = "stl"
-OUTPUT_MD = "bom.md"
 PRINT_SETTINGS_FILE = "print_settings.json"
-STL_EXT = ".stl"
 
 
-# =====================
-# Print settings (NON destructif)
-# =====================
-def load_or_create_print_settings(repo_root: Path):
-    path = repo_root / PRINT_SETTINGS_FILE
-    if path.exists():
-        data = json.loads(path.read_text(encoding="utf-8"))
+def main():
+    repo_root = Path(__file__).resolve().parent
+    stl_root = repo_root / STL_DIR
+    settings_path = repo_root / PRINT_SETTINGS_FILE
+
+    if not stl_root.exists():
+        raise RuntimeError("Le dossier 'stl/' est introuvable à la racine du dépôt")
+
+    # Charger ou initialiser print_settings.json
+    if settings_path.exists():
+        settings = json.loads(settings_path.read_text(encoding="utf-8"))
     else:
-        data = {}
+        settings = {}
 
-    data.setdefault("COMMON_SETTINGS", {})
-    data.setdefault("parts", {})
+    # Initialiser les sections si absentes
+    settings.setdefault("COMMON_SETTINGS", {})
+    settings.setdefault("parts", {})
 
-    return data, path
-
-
-
-
-def sync_print_settings(stl_paths, settings):
-    """
-    Crée / complète la section 'parts' dans print_settings.json
-    à partir des STL trouvés.
-
-    - Ajoute les STL manquants
-    - Initialise perimeters à None
-    - Ne modifie JAMAIS une valeur existante
-    """
-    updated = False
     parts = settings["parts"]
 
-    for rel_path in stl_paths:
+    # Scanner tous les fichiers STL
+    for stl_file in stl_root.rglob("*.stl"):
+        rel_path = stl_file.relative_to(repo_root).as_posix()
+
+        # Ajouter la pièce si absente
         if rel_path not in parts:
             parts[rel_path] = {"perimeters": None}
-            updated = True
 
-    return updated
-
-
-# =====================
-# Lecture perimeters + statut
-# =====================
-def perimeters_value(rel_path, settings) -> str:
-    part = settings.get("parts", {}).get(rel_path)
-    if part and part.get("perimeters") is not None:
-        return str(part["perimeters"])
-    return ""
-
-
-def status_icon(rel_path, settings) -> str:
-    part = settings.get("parts", {}).get(rel_path)
-    if part is None:
-        return "🔴"
-    if part.get("perimeters") is not None:
-        return "🟢"
+    # Écriture SYSTÉMATIQUE (non destructive)
+    settings_path.write_text(
