@@ -29,8 +29,10 @@ def load_or_create_print_settings(repo_root: Path):
     else:
         data = {}
 
-    data.setdefault("global", {})
-    data.setdefault("parts", {})
+    if "global" not in data:
+        data["global"] = {}
+    if "parts" not in data:
+        data["parts"] = {}
 
     return data, path
 
@@ -43,8 +45,9 @@ def sync_print_settings(found_stl_paths, settings):
         if rel_path not in parts:
             parts[rel_path] = {"perimeters": None}
             updated = True
-        else:
-            parts[rel_path].setdefault("perimeters", None)
+        elif "perimeters" not in parts[rel_path]:
+            parts[rel_path]["perimeters"] = None
+            updated = True
 
     return updated
 
@@ -62,11 +65,21 @@ def perimeters_status(rel_path: str, settings: dict) -> str:
 # Liens GitHub (icônes)
 # =====================
 def view_icon(path: str) -> str:
-    return f"[🔍](https://github.com/{GITHUB_USER}/{GITHUB_REPO}/blob/{GITHUB_BRANCH}/{quote(path)})"
+    return "https://github.com/{}/{}/blob/{}/{}".format(
+        GITHUB_USER,
+        GITHUB_REPO,
+        GITHUB_BRANCH,
+        quote(path)
+    )
 
 
 def download_icon(path: str) -> str:
-    return f"[⬇️](https://github.com/{GITHUB_USER}/{GITHUB_REPO}/raw/{GITHUB_BRANCH}/{quote(path)})"
+    return "https://github.com/{}/{}/raw/{}/{}".format(
+        GITHUB_USER,
+        GITHUB_REPO,
+        GITHUB_BRANCH,
+        quote(path)
+    )
 
 
 # =====================
@@ -75,9 +88,15 @@ def download_icon(path: str) -> str:
 def tree_prefix(parents_last, is_last):
     prefix = ""
     for last in parents_last[:-1]:
-        prefix += "    " if last else "│   "
+        if last:
+            prefix += "    "
+        else:
+            prefix += "│   "
     if parents_last:
-        prefix += "└── " if is_last else "├── "
+        if is_last:
+            prefix += "└── "
+        else:
+            prefix += "├── "
     return prefix
 
 
@@ -94,8 +113,10 @@ def walk_tree(root: Path, repo_root: Path, settings: dict, parents_last=None, st
         key=lambda p: (not p.is_dir(), p.name.lower())
     )
 
-    for i, item in enumerate(items):
-        is_last = i == len(items) - 1
+    count = len(items)
+
+    for index, item in enumerate(items):
+        is_last = (index == count - 1)
         prefix = tree_prefix(parents_last + [is_last], is_last)
 
         if item.is_dir():
@@ -133,23 +154,26 @@ def generate_bom(repo_root: Path) -> str:
     all_stl_paths = []
     sections = []
 
+    if not stl_root.exists():
+        return "# 📦 BOM\n\nAucun dossier stl/ trouvé."
+
     for top in sorted(p for p in stl_root.iterdir() if p.is_dir()):
-        section = []
-        section.append(f"## 📁 `{top.name}`")
-        section.append("")
-        section.append("| Arborescence | Type | Perimeters | Visualiser | Télécharger |")
-        section.append("|--------------|------|------------|------------|-------------|")
-        section.append(f"| `{top.name}` | Dossier |  |  |  |")
+        sections.append("## 📁 " + top.name)
+        sections.append("")
+        sections.append("| Arborescence | Type | Perimeters | Visualiser | Télécharger |")
+        sections.append("|--------------|------|------------|------------|-------------|")
+        sections.append("| " + top.name + " | Dossier |  |  |  |")
 
         entries = walk_tree(top, repo_root, settings, stl_paths=all_stl_paths)
 
         for e in entries:
-            section.append(
-                f"| `{e['tree']}` | {e['type']} | {e['status']} | {e['view']} | {e['download']} |"
+            sections.append(
+                "| {} | {} | {} | {} | {} |".format(
+                    e["tree"], e["type"], e["status"], e["view"], e["download"]
+                )
             )
 
-        section.append("")
-        sections.extend(section)
+        sections.append("")
 
     updated = sync_print_settings(all_stl_paths, settings)
     if updated:
@@ -159,11 +183,11 @@ def generate_bom(repo_root: Path) -> str:
         )
 
     header = [
-        "# 📦 BOM – ASG‑29 (Pièces imprimées 3D)",
+        "# 📦 BOM – ASG-29 (Pièces imprimées 3D)",
         "",
-        f"Dépôt GitHub : https://github.com/{GITHUB_USER}/{GITHUB_REPO}",
+        "Dépôt GitHub : https://github.com/{}/{}".format(GITHUB_USER, GITHUB_REPO),
         "",
-        "🟢 perimeters défini 🟡 à définir 🔴 absent",
+        "🟢 perimeters défini — 🟡 à définir — 🔴 absent",
         "",
         "---",
         ""
@@ -172,7 +196,7 @@ def generate_bom(repo_root: Path) -> str:
     if settings["global"]:
         header.append("## ⚙️ Paramètres d’impression globaux")
         for k, v in settings["global"].items():
-            header.append(f"- **{k}** : {v}")
+            header.append("- {} : {}".format(k, v))
         header.append("")
         header.append("---")
         header.append("")
@@ -185,11 +209,10 @@ def generate_bom(repo_root: Path) -> str:
 # =====================
 def main():
     repo_root = Path(__file__).resolve().parent
-    bom_md = generate_bom(repo_root)
-    (repo_root / OUTPUT_MD).write_text(bom_md, encoding="utf-8")
+    bom_content = generate_bom(repo_root)
+    (repo_root / OUTPUT_MD).write_text(bom_content, encoding="utf-8")
     print("✅ bom.md généré et print_settings.json synchronisé")
 
 
 if __name__ == "__main__":
     main()
-``
