@@ -34,6 +34,7 @@ def load_or_create_print_settings(repo_root: Path):
     return data, path
 
 
+
 def sync_print_settings(stl_paths, settings):
     """
     Ajoute les STL manquants dans print_settings.json
