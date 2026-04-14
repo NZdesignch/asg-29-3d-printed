@@ -50,9 +50,6 @@ def sync_print_settings(stl_paths, settings):
             updated = True
 
     return updated
-``
-
-
 
 # =====================
 # Lecture perimeters + statut
