@@ -1,40 +1,39 @@
-name: Generate BOM
+name: Generate STL BOM
 
 on:
   push:
-    branches: [ "main" ]
+    paths:
+      - "stl/**"
+      - "generate_bom.py"
   workflow_dispatch:
 
 jobs:
-  build:
+  generate-bom:
     runs-on: ubuntu-latest
-
-    env:
-      GITHUB_USER: ${{ github.repository_owner }}
-      GITHUB_REPO: ${{ github.event.repository.name }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.x"
 
-      - name: Run BOM generator
+      - name: Generate bom.md
+        run: python3 generate_bom.py
+
+      - name: Commit bom.md if changed
         run: |
-          python3 generate_bom.py
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit and push bom.md
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-
-          if [ -f bom.md ]; then
+          if git status --porcelain | grep bom.md; then
             git add bom.md
-            git commit -m "Update BOM" || echo "No changes to commit"
+            git commit -m "chore: update STL BOM"
             git push
           else
-            echo "bom.md not found"
+            echo "No changes in bom.md"
           fi
