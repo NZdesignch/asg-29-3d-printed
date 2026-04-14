@@ -19,15 +19,15 @@ PRINT_SETTINGS_FILE = "print_settings.json"
 
 
 # =====================
-# Chargement / MAJ print settings (NON destructive)
+# Chargement / création print_settings.json (NON destructif)
 # =====================
 def load_or_create_print_settings(repo_root: Path):
     path = repo_root / PRINT_SETTINGS_FILE
 
-    if not path.exists():
-        data = {"global": {}, "parts": {}}
-    else:
+    if path.exists():
         data = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        data = {}
 
     data.setdefault("global", {})
     data.setdefault("parts", {})
@@ -35,34 +35,12 @@ def load_or_create_print_settings(repo_root: Path):
     return data, path
 
 
-def sync_print_settings(stl_paths, settings):
-    """Ajoute les STL manquants sans modifier l'existant"""
-    parts = settings["parts"]
+def sync_print_settings(found_stl_paths, settings):
     updated = False
+    parts = settings["parts"]
 
-    for rel_path in stl_paths:
+    for rel_path in found_stl_paths:
         if rel_path not in parts:
             parts[rel_path] = {"perimeters": None}
             updated = True
         else:
-            parts[rel_path].setdefault("perimeters", parts[rel_path].get("perimeters"))
-
-    return updated
-
-
-def perimeters_status(rel_path: str, settings: dict) -> str:
-    parts = settings["parts"]
-
-    if rel_path not in parts:
-        return "🔴"
-
-    if parts[rel_path].get("perimeters") is not None:
-        return "🟢"
-
-    return "🟡"
-
-
-# =====================
-# Liens GitHub encodés
-# =====================
-def view_icon(path: str) -> str:
