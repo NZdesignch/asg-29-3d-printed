@@ -1,84 +1,116 @@
 import os
 from pathlib import Path
 
-def scan_tree(root: Path, base_url: str, raw_url: str, prefix=""):
-    """
-    Retourne une liste de lignes représentant l'arborescence en mode tree.
-    """
-    entries = sorted(list(root.iterdir()))
-    rows = []
+GITHUB_USER = "NZdesignch"
+GITHUB_REPO = "asg-29-3d-printedd"
+GITHUB_BRANCH = "main"
 
-    for i, item in enumerate(entries):
-        connector = "└── " if i == len(entries) - 1 else "├── "
-        subtree_prefix = "    " if i == len(entries) - 1 else "│   "
-
-        if item.is_dir():
-            rows.append({
-                "type": "folder",
-                "tree": prefix + connector + f"{item.name}/",
-                "view": "",
-                "download": "",
-                "name": f"📁 {item.name}/"
-            })
-            rows.extend(scan_tree(item, base_url, raw_url, prefix + subtree_prefix))
-
-        elif item.suffix.lower() == ".stl":
-            relative_path = item.as_posix()
-
-            rows.append({
-                "type": "file",
-                "tree": prefix + connector,
-                "view": f"[👁️]({base_url}/{relative_path})",
-                "download": f"[⬇️]({raw_url}/{relative_path})",
-                "name": item.name
-            })
-
-    return rows
+STL_DIR = "stl"
+OUTPUT_MD = "bom.md"
+STL_EXT = ".stl"
 
 
-def generate_bom(stl_folder: str, output_file: str):
-    root = Path(stl_folder)
-    if not root.exists():
-        raise FileNotFoundError(f"Le dossier '{stl_folder}' est introuvable.")
+def github_view_link(path: str) -> str:
+    return f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/blob/{GITHUB_BRANCH}/{path}"
 
-    # Récupération automatique du user et repo depuis GitHub Actions
-    repo_full = os.environ.get("GITHUB_REPOSITORY", "unknown/unknown")
-    user, repo = repo_full.split("/") if "/" in repo_full else ("unknown", "unknown")
 
-    base_url = f"https://github.com/{user}/{repo}/blob/main/{stl_folder}"
-    raw_url = f"https://raw.githubusercontent.com/{user}/{repo}/main/{stl_folder}"
+def github_download_link(path: str) -> str:
+    return f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/raw/{GITHUB_BRANCH}/{path}"
 
-    md = f"# Bill of Materials (STL)\n"
-    md += f"**Dépôt :** https://github.com/{user}/{repo}\n\n"
-    md += "## 📦 Nomenclature par dossier de premier niveau\n\n"
 
-    # Dossiers de premier niveau
-    for item in sorted(root.iterdir()):
-        if item.is_dir():
-            md += f"### 📁 {item.name}\n\n"
-            md += "| Nom | Voir | Télécharger | Arborescence |\n"
-            md += "|-----|------|-------------|--------------|\n"
+def tree_prefix(level: int) -> str:
+    if level <= 1:
+        return ""
+    return "&nbsp;" * 4 * (level - 2) + "└── "
 
-            rows = scan_tree(item, base_url, raw_url)
 
-            for r in rows:
-                md += (
-                    f"| {r['name']} "
-                    f"| {r['view']} "
-                    f"| {r['download']} "
-                    f"| `{r['tree']}` |\n"
-                )
+def analyze_stl(repo_root: Path):
+    stl_root = repo_root / STL_DIR
+    bom = {}
 
-            md += "\n"
+    for lvl1 in sorted(stl_root.iterdir()):
+        if not lvl1.is_dir():
+            continue
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(md)
+        rows = []
+        base_depth = len(lvl1.parts)
 
-    print(f\"Fichier '{output_file}' généré avec succès.\")
+        # Racine du sous-dossier
+        rows.append((
+            1,
+            tree_prefix(1) + lvl1.name,
+            "Dossier",
+            "",
+            ""
+        ))
+
+        for current_path, dirs, files in os.walk(lvl1):
+            current_path = Path(current_path)
+            depth = len(current_path.parts) - base_depth + 1
+
+            if current_path != lvl1:
+                rows.append((
+                    depth,
+                    tree_prefix(depth) + current_path.name,
+                    "Dossier",
+                    "",
+                    ""
+                ))
+
+            for f in sorted(files):
+                if f.lower().endswith(STL_EXT):
+                    rel_path = (current_path / f).relative_to(repo_root).as_posix()
+                    rows.append((
+                        depth + 1,
+                        tree_prefix(depth + 1) + f,
+                        "STL",
+                        github_view_link(rel_path),
+                        github_download_link(rel_path)
+                    ))
+
+        if rows:
+            bom[lvl1.name] = rows
+
+    return bom
+
+
+def generate_markdown(bom: dict) -> str:
+    md = [
+        "# 📦 BOM – ASG‑29 (Pièces imprimées 3D)",
+        "",
+        f"**Dépôt GitHub** : https://github.com/{GITHUB_USER}/{GITHUB_REPO}",
+        "",
+        "> Arborescence multi‑niveaux des fichiers STL (un tableau par sous‑ensemble)",
+        "",
+        "---",
+        ""
+    ]
+
+    for section, rows in bom.items():
+        md.append(f"## 📁 `{section}`")
+        md.append("")
+        md.append("| Arborescence | Type | Visualiser | Télécharger |")
+        md.append("|-------------|------|------------|-------------|")
+
+        for _, name, kind, view, download in rows:
+            view_link = f"[👁️ Voir]({view})" if view else ""
+            download_link = f"[⬇️ STL]({download})" if download else ""
+            md.append(f"| {name} | {kind} | {view_link} | {download_link} |")
+
+        md.append("")
+
+    return "\n".join(md)
+
+
+def main():
+    repo_root = Path(__file__).resolve().parent
+    bom_data = analyze_stl(repo_root)
+    markdown = generate_markdown(bom_data)
+
+    (repo_root / OUTPUT_MD).write_text(markdown, encoding="utf-8")
+    print("✅ bom.md généré avec succès")
 
 
 if __name__ == "__main__":
-    STL_FOLDER = "stl"
-    OUTPUT_MD = "bom.md"
-
-    generate_bom(STL_FOLDER, OUTPUT_MD)
+    main()
+``
