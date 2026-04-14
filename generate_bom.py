@@ -26,10 +26,46 @@ def github_download_link(path: str) -> str:
     return f"[⬇️]({url})"
 
 
-def tree_prefix(level: int) -> str:
-    if level <= 1:
-        return ""
-    return "    " * (level - 2) + "└── "
+def build_tree_prefix(depth: int, is_last: bool, parents_last):
+    prefix = ""
+    for last in parents_last[:-1]:
+        prefix += "    " if last else "│   "
+
+    if depth > 0:
+        prefix += "└── " if is_last else "├── "
+
+    return prefix
+
+
+def walk_tree(root: Path, repo_root: Path, depth=0, parents_last=[]):
+    entries = []
+    items = sorted([p for p in root.iterdir() if p.is_dir() or p.suffix.lower() == STL_EXT])
+    count = len(items)
+
+    for index, item in enumerate(items):
+        is_last = index == count - 1
+        prefix = build_tree_prefix(depth, is_last, parents_last)
+
+        if item.is_dir():
+            entries.append({
+                "tree": prefix + item.name,
+                "type": "Dossier",
+                "view": "",
+                "download": ""
+            })
+            entries.extend(
+                walk_tree(item, repo_root, depth + 1, parents_last + [is_last])
+            )
+        else:
+            rel_path = item.relative_to(repo_root).as_posix()
+            entries.append({
+                "tree": prefix + item.name,
+                "type": "STL",
+                "view": github_view_link(rel_path),
+                "download": github_download_link(rel_path)
+            })
+
+    return entries
 
 
 def analyze_stl(repo_root: Path):
@@ -39,20 +75,37 @@ def analyze_stl(repo_root: Path):
     if not stl_root.exists():
         return bom
 
-    for top_dir in sorted(stl_root.iterdir()):
-        if not top_dir.is_dir():
-            continue
-
-        rows = []
-        base_depth = len(top_dir.parts)
-
-        rows.append({
-            "level": 1,
+    for top_dir in sorted(p for p in stl_root.iterdir() if p.is_dir()):
+        rows = [{
             "tree": top_dir.name,
             "type": "Dossier",
             "view": "",
             "download": ""
-        })
+        }]
 
-        for current_path, dirs, files in os.walk(top_dir):
-            current_path = Path(current_path)
+        rows.extend(walk_tree(top_dir, repo_root))
+        bom[top_dir.name] = rows
+
+    return bom
+
+
+def generate_markdown(bom: dict) -> str:
+    md = [
+        "# 📦 BOM – ASG‑29 (Pièces imprimées 3D)",
+        "",
+        f"**Dépôt GitHub** : https://github.com/{GITHUB_USER}/{GITHUB_REPO}",
+        "",
+        "> Nomenclature multi‑niveaux – affichage arborescent",
+        "",
+        "---",
+        ""
+    ]
+
+    for section, rows in bom.items():
+        md.append(f"## 📁 `{section}`")
+        md.append("")
+        md.append("| Arborescence | Type | Visualiser | Télécharger |")
+        md.append("|--------------|------|------------|-------------|")
+
+        for r in rows:
+            md.append(
