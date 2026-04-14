@@ -6,7 +6,7 @@
         "fill_pattern": "Grille"
     },
     "stl/01 fuselage/Section 04.stl": {
-        "perimeters": null
+        "perimeters": 3
     },
     "stl/04 aile gauche/01 sections/Section 01.stl": {
         "perimeters": null
