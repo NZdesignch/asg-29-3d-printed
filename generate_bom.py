@@ -35,6 +35,10 @@ def load_or_create_print_settings(repo_root: Path):
 
 
 def sync_print_settings(stl_paths, settings):
+    """
+    Ajoute les STL manquants dans print_settings.json
+    sans jamais écraser une valeur existante.
+    """
     updated = False
     parts = settings["parts"]
 
@@ -49,15 +53,18 @@ def sync_print_settings(stl_paths, settings):
     return updated
 
 
+# =====================
+# Lecture perimeters + statut
+# =====================
 def perimeters_value(rel_path, settings) -> str:
-    part = settings["parts"].get(rel_path)
+    part = settings.get("parts", {}).get(rel_path)
     if part and part.get("perimeters") is not None:
         return str(part["perimeters"])
     return ""
 
 
 def status_icon(rel_path, settings) -> str:
-    part = settings["parts"].get(rel_path)
+    part = settings.get("parts", {}).get(rel_path)
     if part is None:
         return "🔴"
     if part.get("perimeters") is not None:
@@ -69,12 +76,20 @@ def status_icon(rel_path, settings) -> str:
 # Liens GitHub (icônes cliquables)
 # =====================
 def view_icon(path: str) -> str:
-    url = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/blob/{GITHUB_BRANCH}/{quote(path)}"
+    url = (
+        f"https://github.com/{GITHUB_USER}/"
+        f"{GITHUB_REPO}/blob/{GITHUB_BRANCH}/"
+        f"{quote(path)}"
+    )
     return f"[🔍]({url})"
 
 
 def download_icon(path: str) -> str:
-    url = f"https://github.com/{GITHUB_USER}/{GITHUB_REPO}/raw/{GITHUB_BRANCH}/{quote(path)}"
+    url = (
+        f"https://github.com/{GITHUB_USER}/"
+        f"{GITHUB_REPO}/raw/{GITHUB_BRANCH}/"
+        f"{quote(path)}"
+    )
     return f"[⬇️]({url})"
 
 
@@ -153,7 +168,8 @@ def generate_bom(repo_root: Path) -> str:
         entries = walk_tree(top, repo_root, settings, stl_paths=all_stl_paths)
         for e in entries:
             sections.append(
-                f"| `{e['tree']}` | {e['type']} | {e['perimeters']} | {e['status']} | {e['view']} | {e['download']} |"
+                f"| `{e['tree']}` | {e['type']} | {e['perimeters']} | "
+                f"{e['status']} | {e['view']} | {e['download']} |"
             )
         sections.append("")
 
@@ -164,38 +180,3 @@ def generate_bom(repo_root: Path) -> str:
         )
 
     header = [
-        "# 📦 BOM – ASG‑29 (Pièces imprimées 3D)",
-        "",
-        "## ⚙️ Paramètres d’impression globaux",
-        ""
-    ]
-
-    if settings["COMMON_SETTINGS"]:
-        for k, v in settings["COMMON_SETTINGS"].items():
-            header.append(f"- **{k}** : {v}")
-    else:
-        header.append("_Aucun paramètre global défini_")
-
-    header.extend([
-        "",
-        "🟢 paramètres complets · 🟡 incomplets · 🔴 manquants",
-        "",
-        "---",
-        ""
-    ])
-
-    return "\n".join(header + sections)
-
-
-# =====================
-# Main
-# =====================
-def main():
-    repo_root = Path(__file__).resolve().parent
-    bom_md = generate_bom(repo_root)
-    (repo_root / OUTPUT_MD).write_text(bom_md, encoding="utf-8")
-    print("✅ bom.md généré et print_settings.json synchronisé")
-
-
-if __name__ == "__main__":
-    main()
