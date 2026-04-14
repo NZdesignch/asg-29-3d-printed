@@ -1,6 +1,8 @@
 # 📦 BOM – ASG‑29 (Pièces imprimées 3D)
 
-Dépôt GitHub : https://github.com/NZdesignch/asg-29-3d-printedd
+Dépôt GitHub : https://github.com/NZdesignch/asg-29-3d-printed
+
+> Nomenclature multi‑niveaux – affichage arborescent
 
 ---
 
@@ -9,7 +11,7 @@ Dépôt GitHub : https://github.com/NZdesignch/asg-29-3d-printedd
 | Arborescence | Type | Visualiser | Télécharger |
 |--------------|------|------------|-------------|
 | `01 fuselage` | Dossier |  |  |
-| `└── Section 04.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/01%20fuselage/Section%2004.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/01%20fuselage/Section%2004.stl |
+| `└── Section 04.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/01%20fuselage/Section%2004.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/01%20fuselage/Section%2004.stl) |
 
 ## 📁 `04 aile gauche`
 
@@ -17,20 +19,20 @@ Dépôt GitHub : https://github.com/NZdesignch/asg-29-3d-printedd
 |--------------|------|------------|-------------|
 | `04 aile gauche` | Dossier |  |  |
 | `├── 01 sections` | Dossier |  |  |
-| `│   ├── Section 01.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/01%20sections/Section%2001.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/01%20sections/Section%2001.stl |
-| `│   ├── section 02.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/01%20sections/section%2002.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/01%20sections/section%2002.stl |
-| `│   └── section 03.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/01%20sections/section%2003.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/01%20sections/section%2003.stl |
+| `│   ├── Section 01.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/01%20sections/Section%2001.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/01%20sections/Section%2001.stl) |
+| `│   ├── section 02.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/01%20sections/section%2002.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/01%20sections/section%2002.stl) |
+| `│   └── section 03.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/01%20sections/section%2003.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/01%20sections/section%2003.stl) |
 | `├── 02 nervures` | Dossier |  |  |
-| `│   ├── Nervure 01.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2001.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2001.stl |
-| `│   ├── Nervure 02.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2002.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2002.stl |
-| `│   └── Nervure 03.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2003.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2003.stl |
+| `│   ├── Nervure 01.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2001.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2001.stl) |
+| `│   ├── Nervure 02.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2002.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2002.stl) |
+| `│   └── Nervure 03.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2003.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/02%20nervures/Nervure%2003.stl) |
 | `├── 03 volet` | Dossier |  |  |
 | `│   ├── 01 sections` | Dossier |  |  |
-| `│   │   └── section 01.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/03%20volet/01%20sections/section%2001.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/03%20volet/01%20sections/section%2001.stl |
+| `│   │   └── section 01.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/03%20volet/01%20sections/section%2001.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/03%20volet/01%20sections/section%2001.stl) |
 | `│   └── 02 nervures` | Dossier |  |  |
-| `│       └── nervure 01.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl |
+| `│       └── nervure 01.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/03%20volet/02%20nervures/nervure%2001.stl) |
 | `└── 04 aileron` | Dossier |  |  |
 | `    ├── 01 sections` | Dossier |  |  |
-| `    │   └── section 01.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl |
+| `    │   └── section 01.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/04%20aileron/01%20sections/section%2001.stl) |
 | `    └── 02 nervures` | Dossier |  |  |
-| `        └── nervure 01.stl` | STL | https://github.com/NZdesignch/asg-29-3d-printedd/blob/main/stl/04%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl | https://github.com/NZdesignch/asg-29-3d-printedd/raw/main/stl/04%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl |
+| `        └── nervure 01.stl` | STL | [🔍](https://github.com/NZdesignch/asg-29-3d-printed/blob/main/stl/04%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl) | [⬇️](https://github.com/NZdesignch/asg-29-3d-printed/raw/main/stl/04%20aile%20gauche/04%20aileron/02%20nervures/nervure%2001.stl) |
