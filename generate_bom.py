@@ -35,11 +35,15 @@ def load_or_create_print_settings(repo_root: Path):
 
 
 
-def sync_print_settings(stl_paths, settings):
+
+ef sync_print_settings(stl_paths, settings):
     """
-    Synchronise print_settings.json avec les STL trouvés.
+    Crée / complète la section 'parts' dans print_settings.json
+    à partir des STL trouvés.
+
     - Ajoute les STL manquants
-    - N'écrase jamais une valeur existante
+    - Initialise perimeters à None
+    - Ne modifie JAMAIS une valeur existante
     """
     updated = False
     parts = settings["parts"]
@@ -50,6 +54,7 @@ def sync_print_settings(stl_paths, settings):
             updated = True
 
     return updated
+
 
 # =====================
 # Lecture perimeters + statut
