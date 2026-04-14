@@ -36,7 +36,7 @@ def load_or_create_print_settings(repo_root: Path):
 
 
 
-ef sync_print_settings(stl_paths, settings):
+def sync_print_settings(stl_paths, settings):
     """
     Crée / complète la section 'parts' dans print_settings.json
     à partir des STL trouvés.
