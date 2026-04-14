@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "stl/**"
+      - "print_settings.json"
       - "generate_bom.py"
   workflow_dispatch:
 
@@ -22,18 +23,18 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Generate bom.md
+      - name: Generate BOM and sync print settings
         run: python3 generate_bom.py
 
-      - name: Commit bom.md if changed
+      - name: Commit changes if needed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          if git status --porcelain | grep bom.md; then
-            git add bom.md
-            git commit -m "chore: update STL BOM"
+          if git status --porcelain | grep -E "bom.md|print_settings.json"; then
+            git add bom.md print_settings.json
+            git commit -m "chore: update BOM and print settings"
             git push
           else
-            echo "No changes in bom.md"
+            echo "No changes to commit"
           fi
