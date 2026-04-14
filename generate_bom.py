@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from urllib.parse import quote
 
@@ -6,7 +5,7 @@ from urllib.parse import quote
 # Configuration GitHub
 # =====================
 GITHUB_USER = "NZdesignch"
-GITHUB_REPO = "asg-29-3d-printedd"
+GITHUB_REPO = "asg-29-3d-printed"
 GITHUB_BRANCH = "main"
 
 # =====================
@@ -18,40 +17,32 @@ STL_EXT = ".stl"
 
 
 # =====================
-# Liens GitHub (URL encodées)
+# Liens GitHub encodés
 # =====================
-def github_view_link(path: str) -> str:
+def view_icon(path: str) -> str:
     encoded = quote(path)
-    return (
-        "https://github.com/"
-        + GITHUB_USER
-        + "/"
-        + GITHUB_REPO
-        + "/blob/"
-        + GITHUB_BRANCH
-        + "/"
-        + encoded
+    url = (
+        f"https://github.com/{GITHUB_USER}/"
+        f"{GITHUB_REPO}/blob/{GITHUB_BRANCH}/"
+        f"{encoded}"
     )
+    return f"[🔍]({url})"
 
 
-def github_download_link(path: str) -> str:
+def download_icon(path: str) -> str:
     encoded = quote(path)
-    return (
-        "https://github.com/"
-        + GITHUB_USER
-        + "/"
-        + GITHUB_REPO
-        + "/raw/"
-        + GITHUB_BRANCH
-        + "/"
-        + encoded
+    url = (
+        f"https://github.com/{GITHUB_USER}/"
+        f"{GITHUB_REPO}/raw/{GITHUB_BRANCH}/"
+        f"{encoded}"
     )
+    return f"[⬇️]({url})"
 
 
 # =====================
-# Construction du tree
+# Construction arbre ASCII
 # =====================
-def build_tree_prefix(parents_last, is_last):
+def tree_prefix(parents_last, is_last):
     prefix = ""
     for last in parents_last[:-1]:
         prefix += "    " if last else "│   "
@@ -73,9 +64,9 @@ def walk_tree(root: Path, repo_root: Path, parents_last=None):
 
     total = len(items)
 
-    for index, item in enumerate(items):
-        is_last = index == total - 1
-        prefix = build_tree_prefix(parents_last + [is_last], is_last)
+    for i, item in enumerate(items):
+        is_last = i == total - 1
+        prefix = tree_prefix(parents_last + [is_last], is_last)
 
         if item.is_dir():
             entries.append({
@@ -92,8 +83,8 @@ def walk_tree(root: Path, repo_root: Path, parents_last=None):
             entries.append({
                 "tree": prefix + item.name,
                 "type": "STL",
-                "view": github_view_link(rel_path),
-                "download": github_download_link(rel_path)
+                "view": view_icon(rel_path),
+                "download": download_icon(rel_path)
             })
 
     return entries
@@ -108,37 +99,31 @@ def generate_markdown(repo_root: Path) -> str:
     lines = [
         "# 📦 BOM – ASG‑29 (Pièces imprimées 3D)",
         "",
-        "Dépôt GitHub : https://github.com/"
-        + GITHUB_USER
-        + "/"
-        + GITHUB_REPO,
+        f"Dépôt GitHub : https://github.com/{GITHUB_USER}/{GITHUB_REPO}",
+        "",
+        "> Nomenclature multi‑niveaux – affichage arborescent",
         "",
         "---",
         ""
     ]
 
     if not stl_root.exists():
-        lines.append("_Aucun dossier stl/ trouvé._")
+        lines.append("_Aucun dossier `stl/` trouvé._")
         return "\n".join(lines)
 
     for top_dir in sorted(p for p in stl_root.iterdir() if p.is_dir()):
-        lines.append("## 📁 `" + top_dir.name + "`")
+        lines.append(f"## 📁 `{top_dir.name}`")
         lines.append("")
         lines.append("| Arborescence | Type | Visualiser | Télécharger |")
         lines.append("|--------------|------|------------|-------------|")
-        lines.append("| `" + top_dir.name + "` | Dossier |  |  |")
+        lines.append(f"| `{top_dir.name}` | Dossier |  |  |")
 
         for entry in walk_tree(top_dir, repo_root):
             lines.append(
-                "| `"
-                + entry["tree"]
-                + "` | "
-                + entry["type"]
-                + " | "
-                + entry["view"]
-                + " | "
-                + entry["download"]
-                + " |"
+                f"| `{entry['tree']}` | "
+                f"{entry['type']} | "
+                f"{entry['view']} | "
+                f"{entry['download']} |"
             )
 
         lines.append("")
@@ -152,9 +137,8 @@ def generate_markdown(repo_root: Path) -> str:
 def main():
     repo_root = Path(__file__).resolve().parent
     markdown = generate_markdown(repo_root)
-    output_path = repo_root / OUTPUT_MD
-    output_path.write_text(markdown, encoding="utf-8")
-    print("✅ bom.md généré avec succès")
+    (repo_root / OUTPUT_MD).write_text(markdown, encoding="utf-8")
+    print("✅ bom.md généré avec icônes cliquables")
 
 
 if __name__ == "__main__":
